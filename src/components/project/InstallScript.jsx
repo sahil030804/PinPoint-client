@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 const WIDGET_URL = process.env.NEXT_PUBLIC_WIDGET_URL || '/widget.js';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 
 export function InstallScript({ projectId, widgetConfig = {} }) {
   const [copied, setCopied] = useState(false);
@@ -15,7 +16,10 @@ export function InstallScript({ projectId, widgetConfig = {} }) {
     ...widgetConfig,
   };
 
-  const snippet = `<script src="${WIDGET_URL}"></script>
+  const snippet = `<script>
+window.PINPOINT_API_URL = "${API_URL}";
+</script>
+<script src="${WIDGET_URL}"></script>
 <script>
   Feedback.init({
     projectId: "${projectId}",
