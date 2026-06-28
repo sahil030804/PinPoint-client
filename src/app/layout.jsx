@@ -24,8 +24,6 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  const widgetProjectId = process.env.NEXT_PUBLIC_WIDGET_PROJECT_ID;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -41,29 +39,6 @@ export default function RootLayout({ children }) {
             })();
           `
         }} />
-        {widgetProjectId && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  var s = document.createElement('script');
-                  s.src = '${process.env.NEXT_PUBLIC_WIDGET_URL || '/widget.js'}';
-                  s.onload = function() {
-                    Feedback.init({
-                      projectId: '${widgetProjectId}',
-                      color: '${process.env.NEXT_PUBLIC_WIDGET_COLOR || '#3B82F6'}',
-                      position: '${process.env.NEXT_PUBLIC_WIDGET_POSITION || 'bottom-right'}',
-                      buttonText: '${process.env.NEXT_PUBLIC_WIDGET_BUTTON_TEXT || 'Feedback'}',
-                      icon: '${process.env.NEXT_PUBLIC_WIDGET_ICON || 'chat'}',
-                      darkMode: ${process.env.NEXT_PUBLIC_WIDGET_DARK_MODE === 'true'}
-                    });
-                  };
-                  document.head.appendChild(s);
-                })();
-              `
-            }}
-          />
-        )}
       </head>
       <body className="min-h-screen bg-white font-sans antialiased dark:bg-gray-950">
         <ThemeProvider>
@@ -75,6 +50,22 @@ export default function RootLayout({ children }) {
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
+
+        <script dangerouslySetInnerHTML={{
+          __html: `window.PINPOINT_API_URL = "https://pinpoint-server-production.up.railway.app/v1";`,
+        }} />
+        <script src="https://pin-point-client-rho.vercel.app/widget.js" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            Feedback.init({
+              projectId: "e9597f9d-78d5-4374-9042-af4f2c44ceb2",
+              color: "#f73b3b",
+              position: "bottom-right",
+              buttonText: "Bug Report",
+              icon: "bug"
+            });
+          `,
+        }} />
       </body>
     </html>
   );
