@@ -145,6 +145,16 @@ export function useWorkspace(workspaceId) {
   });
 }
 
+export function useWorkspaceStats(workspaceId) {
+  return useQuery({
+    queryKey: ['workspace', 'stats', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/stats`),
+    staleTime: 30_000,
+    select: (res) => res.data,
+    enabled: !!workspaceId,
+  });
+}
+
 export function useInvitations() {
   return useQuery({
     queryKey: ['invitations'],

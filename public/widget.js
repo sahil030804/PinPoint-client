@@ -28,6 +28,7 @@
       buttonText: config.buttonText || 'Feedback',
       icon: config.icon || 'chat',
       darkMode: config.darkMode || false,
+      whiteLabel: config.whiteLabel || false,
     };
 
     if (!CONFIG.projectId) {
@@ -37,6 +38,15 @@
 
     injectStyles();
     createButton();
+
+    fetch(API_BASE + '/feedback/widget/' + CONFIG.projectId + '/config')
+      .then(function (r) { return r.json(); })
+      .then(function (body) {
+        if (body.success && body.data) {
+          CONFIG.whiteLabel = body.data.whiteLabel === true;
+        }
+      })
+      .catch(function () {});
   }
 
   function injectStyles() {
@@ -72,6 +82,11 @@
       '.pp-dark .pp-widget-form label { color: #9ca3af; }',
       '.pp-dark .pp-widget-form input, .pp-dark .pp-widget-form textarea { background: #374151; border-color: #4b5563; color: #f9fafb; }',
       '.pp-dark .pp-widget-cancel:hover { background: #374151; color: #d1d5db; }',
+      '.pp-branding { text-align: center; padding: 6px 0 0; font-size: 11px; }',
+      '.pp-branding a { color: #9ca3af; text-decoration: none; }',
+      '.pp-branding a:hover { color: #6b7280; }',
+      '.pp-dark .pp-branding a { color: #6b7280; }',
+      '.pp-dark .pp-branding a:hover { color: #9ca3af; }',
 
       '.pp-annotate-overlay { position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; }',
       '.pp-annotate-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; flex-shrink: 0; }',
@@ -225,6 +240,7 @@
       '</div>',
       '<button class="pp-widget-submit" id="pp-submit" style="background:' + CONFIG.color + '">Continue to Annotate →</button>',
       '<button class="pp-widget-cancel" id="pp-cancel">Cancel</button>',
+      (CONFIG.whiteLabel ? '' : '<div class="pp-branding"><a href="https://pinpoint.com" target="_blank" rel="noopener">Powered by PinPoint</a></div>'),
     ].join('');
 
     document.body.appendChild(formEl);
