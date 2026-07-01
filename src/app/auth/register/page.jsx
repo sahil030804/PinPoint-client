@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
@@ -9,16 +9,23 @@ import { useToast } from '@/providers/ToastProvider';
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [invitationId, setInvitationId] = useState(null);
   const { register } = useAuth();
   const { error: toastError } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const inv = searchParams.get('invitation');
+    if (inv) setInvitationId(inv);
+  }, [searchParams]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await register(form);
+      const res = await register({ ...form, invitationId });
       if (res.success) {
         router.push('/dashboard');
       } else {
