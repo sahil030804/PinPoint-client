@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
-import { useWorkspace, useUpdateWorkspace } from '@/hooks/useWorkspace';
+import { useWorkspace, useUpdateWorkspace, useWorkspaceStats } from '@/hooks/useWorkspace';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -21,10 +21,35 @@ const EVENT_OPTIONS = [
   { value: 'comment.created', label: 'New comments' },
 ];
 
+function UsageBar({ current, limit, label }) {
+  if (limit === Infinity) {
+    return (
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-gray-600 dark:text-gray-400">{label}</span>
+        <span className="text-green-600 dark:text-green-400">Unlimited</span>
+      </div>
+    );
+  }
+  const pct = Math.min((current / limit) * 100, 100);
+  const color = pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-yellow-500' : 'bg-blue-500';
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm mb-1">
+        <span className="text-gray-600 dark:text-gray-400">{label}</span>
+        <span className="text-gray-900 dark:text-gray-100">{current} / {limit}</span>
+      </div>
+      <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+        <div className={`h-2 rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const pathname = usePathname();
   const { user, updateUser } = useAuth();
   const { data: workspace, isLoading } = useWorkspace(user?.workspaceId);
+  const { data: stats, isLoading: statsLoading } = useWorkspaceStats(user?.workspaceId);
   const updateWorkspace = useUpdateWorkspace();
   const { success: toastSuccess, error: toastError } = useToast();
   const [name, setName] = useState('');
@@ -172,6 +197,9 @@ export default function SettingsPage() {
     );
   }
 
+  const isFree = workspace?.plan === 'free' || stats?.plan === 'free';
+  const usage = stats?.usage;
+
   return (
     <div>
       <PageHeader title="Settings" description="Manage your account and workspace." />
@@ -299,6 +327,60 @@ export default function SettingsPage() {
               )}
             </div>
           </form>
+        </div>
+
+        {/* Plan & Usage Section */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Plan</h3>
+            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+              isFree
+                ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+            }`}>
+              {isFree ? 'Free' : 'Pro'}
+            </span>
+          </div>
+
+          {statsLoading ? (
+            <div className="animate-pulse space-y-3">
+              <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-800" />
+              <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-800" />
+              <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-800" />
+            </div>
+          ) : usage ? (
+            <div className="space-y-4">
+              <UsageBar current={usage.feedback.current} limit={usage.feedback.limit} label="Monthly Feedback" />
+              <UsageBar current={usage.websites.current} limit={usage.websites.limit} label="Websites" />
+              <UsageBar current={usage.members.current} limit={usage.members.limit} label="Team Members" />
+
+              {isFree && (
+                <div className="mt-4 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 p-4 dark:from-purple-900/20 dark:to-blue-900/20">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Upgrade to Pro</p>
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                    Unlimited feedback, websites, and team members. Remove PinPoint branding from your widget.
+                  </p>
+                  <a
+                    href="mailto:sahil030804@gmail.com?subject=PinPoint%20Pro%20Upgrade"
+                    className="mt-3 inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500 transition-colors"
+                  >
+                    Contact for Upgrade
+                  </a>
+                </div>
+              )}
+
+              {!isFree && (
+                <div className="mt-4 rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                    You&apos;re on the Pro plan. All features unlocked.
+                  </p>
+                  <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+                    White-label widget is enabled — no PinPoint branding shown.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
