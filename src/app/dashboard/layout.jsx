@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Settings, Users } from 'lucide-react';
+import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Settings, Users, Bell } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/ThemeProvider';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
@@ -18,15 +20,33 @@ const NAV_ITEMS = [
   { label: 'Members', href: '/dashboard/members', icon: Users },
 ];
 
+function isActive(pathname, href) {
+  if (href === '/dashboard') return pathname === '/dashboard';
+  return pathname.startsWith(href);
+}
+
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading, workspaces, activeWorkspaceId, switchWorkspace, logout } = useAuth();
   const { dark, toggleTheme } = useTheme();
+  const { onActivity } = useWebSocket();
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const res = await api.get('/notifications/count');
+      if (res.success) {
+        setUnreadCount(res.data.count);
+      }
+    } catch {
+      // silently fail
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && user && !activeWorkspaceId) {
@@ -34,6 +54,22 @@ export default function DashboardLayout({ children }) {
       router.replace('/auth/setup-workspace');
     }
   }, [loading, user, activeWorkspaceId, router, pathname]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchUnreadCount]);
+
+  useEffect(() => {
+    if (!onActivity) return;
+    const cleanup = onActivity(() => {
+      setUnreadCount((prev) => prev + 1);
+    });
+    return cleanup;
+  }, [onActivity]);
 
   if (loading || !user) {
     return (
@@ -131,7 +167,7 @@ export default function DashboardLayout({ children }) {
               href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                pathname === item.href
+                isActive(pathname, item.href)
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
               )}
@@ -152,12 +188,26 @@ export default function DashboardLayout({ children }) {
               <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
             </div>
           </div>
-          <button
-            onClick={logout}
-            className="mt-3 w-full rounded-lg px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            Sign out
-          </button>
+          <div className="mt-2 flex items-center justify-between">
+            <Link
+              href="/dashboard/inbox"
+              className="relative rounded-lg px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Bell size={14} className="inline mr-1" />
+              Notifications
+              {unreadCount > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+            <button
+              onClick={logout}
+              className="rounded-lg px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -173,6 +223,17 @@ export default function DashboardLayout({ children }) {
             <span className="text-xl">☰</span>
           </button>
           <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard/inbox"
+              className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
             <button
               onClick={toggleTheme}
               className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"

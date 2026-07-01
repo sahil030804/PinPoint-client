@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { useWorkspace, useUpdateWorkspace } from '@/hooks/useWorkspace';
+import { api } from '@/lib/api';
 import { PageHeader } from '@/components/common/PageHeader';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { data: workspace, isLoading } = useWorkspace(user?.workspaceId);
   const updateWorkspace = useUpdateWorkspace();
   const { success: toastSuccess, error: toastError } = useToast();
@@ -28,10 +29,20 @@ export default function SettingsPage() {
     setSaving(true);
 
     try {
+      if (name !== user?.name) {
+        const res = await api.put('/auth/me', { name });
+        if (res.success) {
+          updateUser({ name: res.data.name });
+        } else {
+          throw new Error(res.error?.message || 'Failed to update profile');
+        }
+      }
+
       if (workspaceName !== workspace?.name) {
         const res = await updateWorkspace.mutateAsync({ id: user?.workspaceId, name: workspaceName });
         if (!res.success) throw new Error(res.error?.message);
       }
+
       toastSuccess('Settings saved successfully.');
     } catch (err) {
       toastError(err.message || 'Failed to save settings');

@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { StatusBadge } from './StatusBadge';
-import { PriorityBadge } from './PriorityBadge';
 import { EmptyState } from './EmptyState';
 
 export function DataTable({
@@ -24,6 +22,18 @@ export function DataTable({
     setSortDir(dir);
     if (onSort) onSort(key, dir);
   }
+
+  const sortedData = useMemo(() => {
+    if (!sortKey || !data.length) return data;
+    return [...data].sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = typeof aVal === 'string' ? aVal.localeCompare(bVal) : aVal - bVal;
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [data, sortKey, sortDir]);
 
   if (loading) {
     return (
@@ -86,7 +96,7 @@ export function DataTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-950">
-          {data.map((item, index) => (
+          {sortedData.map((item, index) => (
             <tr
               key={item.id || index}
               className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-900 ${

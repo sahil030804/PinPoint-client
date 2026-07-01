@@ -99,6 +99,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem('pp_token', res.data.token);
       api.setToken(res.data.token);
       setUser(res.data.user);
+      if (res.data.user.role) {
+        setWorkspaceRole(res.data.user.role);
+      }
       const ws = await fetchWorkspaces();
       if (res.data.user.workspaceId) {
         setActiveWorkspaceId(res.data.user.workspaceId);
@@ -157,8 +160,12 @@ export function AuthProvider({ children }) {
     return ws;
   }, [activeWorkspaceId]);
 
+  const updateUser = useCallback((updates) => {
+    setUser((prev) => prev ? { ...prev, ...updates } : prev);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user: exposedUser, loading, workspaces, activeWorkspaceId, workspaceRole, login, register, logout, switchWorkspace, refreshWorkspaceRole, refreshWorkspaces }}>
+    <AuthContext.Provider value={{ user: exposedUser, loading, workspaces, activeWorkspaceId, workspaceRole, login, register, logout, switchWorkspace, refreshWorkspaceRole, refreshWorkspaces, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
