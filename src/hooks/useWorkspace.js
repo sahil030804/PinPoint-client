@@ -180,14 +180,3 @@ export function useUpdateWorkspace() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workspace'] }),
   });
 }
-
-export function useUpdateFeedbackStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }) => api.put(`/feedback/${id}`, data),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['feedback'] });
-      queryClient.invalidateQueries({ queryKey: ['timeline', variables.id] });
-    },
-  });
-}

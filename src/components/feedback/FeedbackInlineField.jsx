@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useUpdateFeedbackStatus } from '@/hooks/useWorkspace';
+import { useUpdateFeedback } from '@/hooks/useFeedback';
 import { useToast } from '@/providers/ToastProvider';
 
 export const STATUS_OPTIONS = [
@@ -23,7 +23,7 @@ export const PRIORITY_OPTIONS = [
 export function FeedbackInlineField({ feedbackId, field, value, options, renderDisplay }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const updateFeedback = useUpdateFeedbackStatus();
+  const updateFeedback = useUpdateFeedback();
   const { success: toastSuccess, error: toastError } = useToast();
 
   useEffect(() => {

@@ -37,6 +37,16 @@
 
     injectStyles();
     createButton();
+    preloadHtmlToImage();
+  }
+
+  var _htmlToImageLoaded = false;
+  function preloadHtmlToImage() {
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js';
+    script.onload = function () { _htmlToImageLoaded = true; };
+    script.onerror = function () { _htmlToImageLoaded = false; };
+    document.head.appendChild(script);
   }
 
   function injectStyles() {
@@ -288,6 +298,12 @@
 
   function takeScreenshot() {
     return new Promise(function (resolve) {
+      if (window.htmlToImage) {
+        window.htmlToImage.toPng(document.body, { quality: 0.7, pixelRatio: 1.0 })
+          .then(function (dataUrl) { resolve(dataUrl); })
+          .catch(function () { resolve(null); });
+        return;
+      }
       var script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js';
       script.onload = function () {

@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeedback, useComments, useAddComment, useFeedbackTimeline } from '@/hooks/useFeedback';
-import { useUpdateFeedbackStatus, useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useUpdateFeedback } from '@/hooks/useFeedback';
+import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { FeedbackTimeline } from '@/components/feedback/FeedbackTimeline';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { PriorityBadge } from '@/components/common/PriorityBadge';
@@ -53,7 +54,7 @@ export default function FeedbackDetailPage() {
   const { data: comments = [], isLoading: commentsLoading } = useComments(params.feedbackId);
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
   const addComment = useAddComment();
-  const updateFeedback = useUpdateFeedbackStatus();
+  const updateFeedback = useUpdateFeedback();
   const [newComment, setNewComment] = useState('');
   const [editing, setEditing] = useState(false);
   const [editStatus, setEditStatus] = useState('');

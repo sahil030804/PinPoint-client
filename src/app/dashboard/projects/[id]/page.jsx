@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useProjects, useWebsites, useCreateWebsite, useWorkspaceFeedback } from '@/hooks/useWorkspace';
-import { api } from '@/lib/api';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
@@ -13,7 +12,8 @@ import { PriorityBadge } from '@/components/common/PriorityBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { InstallScript } from '@/components/project/InstallScript';
 import { WidgetConfigForm } from '@/components/project/WidgetConfigForm';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 import { ScreenshotThumbnail } from '@/components/feedback/ScreenshotThumbnail';
 
 const FEEDBACK_COLUMNS = [
@@ -86,10 +86,15 @@ export default function ProjectDetailPage() {
     }
   }
 
+  const updateWebsiteMutation = useMutation({
+    mutationFn: ({ websiteId, ...data }) => api.put(`/websites/${websiteId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['websites', params.id] });
+    },
+  });
+
   async function handleSaveWidgetConfig(websiteId, data) {
-    const res = await api.put(`/websites/${websiteId}`, data);
-    if (!res.success) throw new Error(res.error?.message || 'Failed to save');
-    queryClient.invalidateQueries({ queryKey: ['websites', params.id] });
+    await updateWebsiteMutation.mutateAsync({ websiteId, ...data });
   }
 
   if (!project) {
