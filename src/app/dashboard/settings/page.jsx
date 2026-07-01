@@ -15,6 +15,12 @@ const SETTINGS_TABS = [
   { label: 'API Keys', href: '/dashboard/settings/api-keys' },
 ];
 
+const EVENT_OPTIONS = [
+  { value: 'feedback.created', label: 'New feedback' },
+  { value: 'feedback.updated', label: 'Status changes' },
+  { value: 'comment.created', label: 'New comments' },
+];
+
 export default function SettingsPage() {
   const pathname = usePathname();
   const { user, updateUser } = useAuth();
@@ -25,12 +31,29 @@ export default function SettingsPage() {
   const [workspaceName, setWorkspaceName] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookEvents, setWebhookEvents] = useState(['feedback.created']);
+  const [webhookSaved, setWebhookSaved] = useState(false);
+  const [savingWebhook, setSavingWebhook] = useState(false);
+  const [webhooks, setWebhooks] = useState([]);
+
   useEffect(() => {
     if (user?.name) setName(user.name);
   }, [user]);
 
   useEffect(() => {
     if (workspace?.name) setWorkspaceName(workspace.name);
+  }, [workspace]);
+
+  useEffect(() => {
+    if (workspace?.theme?.webhooks) {
+      setWebhooks(workspace.theme.webhooks);
+      const active = workspace.theme.webhooks.find((w) => w.isActive);
+      if (active) {
+        setWebhookUrl(active.url);
+        setWebhookEvents(active.events);
+      }
+    }
   }, [workspace]);
 
   async function handleSave(e) {
@@ -58,6 +81,57 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSaveWebhook(e) {
+    e.preventDefault();
+    setSavingWebhook(true);
+    setWebhookSaved(false);
+
+    try {
+      const currentActive = webhooks.find((w) => w.isActive);
+
+      if (currentActive) {
+        if (!webhookUrl) {
+          await api.del(`/webhooks/${currentActive.id}`);
+          setWebhooks([]);
+          setWebhookEvents(['feedback.created']);
+        } else {
+          const res = await api.patch(`/webhooks/${currentActive.id}`, {
+            url: webhookUrl,
+            events: webhookEvents,
+            isActive: true,
+          });
+          if (!res.success) throw new Error(res.error?.message);
+        }
+      } else if (webhookUrl) {
+        const res = await api.post('/webhooks', {
+          url: webhookUrl,
+          events: webhookEvents,
+          isActive: true,
+        });
+        if (!res.success) throw new Error(res.error?.message);
+      }
+
+      const ws = await api.get(`/workspaces/${user?.workspaceId}`);
+      if (ws.success) {
+        const whs = ws.data?.theme?.webhooks || [];
+        setWebhooks(whs);
+      }
+
+      setWebhookSaved(true);
+      toastSuccess('Webhook saved successfully.');
+    } catch (err) {
+      toastError(err.message || 'Failed to save webhook');
+    } finally {
+      setSavingWebhook(false);
+    }
+  }
+
+  function toggleEvent(value) {
+    setWebhookEvents((prev) =>
+      prev.includes(value) ? prev.filter((e) => e !== value) : [...prev, value]
+    );
   }
 
   if (isLoading) {
@@ -170,6 +244,62 @@ export default function SettingsPage() {
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Slack Integration</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Send feedback notifications to a Slack channel via webhook.
+          </p>
+
+          {webhooks.filter((w) => w.isActive).length > 0 && (
+            <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+              Slack webhook is active ({webhooks.filter((w) => w.isActive).length} configured)
+            </div>
+          )}
+
+          <form onSubmit={handleSaveWebhook} className="mt-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Webhook URL</label>
+              <input
+                type="url"
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                placeholder="https://hooks.slack.com/services/..."
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+
+            <fieldset>
+              <legend className="text-sm font-medium text-gray-700 dark:text-gray-300">Notify on</legend>
+              <div className="mt-2 space-y-2">
+                {EVENT_OPTIONS.map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={webhookEvents.includes(opt.value)}
+                      onChange={() => toggleEvent(opt.value)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                disabled={savingWebhook}
+                className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50 active:scale-[0.97] transition-transform"
+              >
+                {savingWebhook ? 'Saving...' : 'Save Webhook'}
+              </button>
+              {webhookSaved && (
+                <span className="text-sm text-green-600 dark:text-green-400">Saved</span>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
