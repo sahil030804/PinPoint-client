@@ -145,6 +145,34 @@ export function useWorkspace(workspaceId) {
   });
 }
 
+export function useInvitations() {
+  return useQuery({
+    queryKey: ['invitations'],
+    queryFn: () => api.get('/workspaces/invitations'),
+    staleTime: 30_000,
+    select: (res) => res.data || [],
+  });
+}
+
+export function useAcceptInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.post(`/workspaces/invitations/${id}/accept`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+    },
+  });
+}
+
+export function useRejectInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.post(`/workspaces/invitations/${id}/reject`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['invitations'] }),
+  });
+}
+
 export function useUpdateWorkspace() {
   const queryClient = useQueryClient();
   return useMutation({

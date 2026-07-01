@@ -57,7 +57,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
+           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Password
             </label>
@@ -70,6 +70,12 @@ export default function LoginPage() {
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               placeholder="Enter your password"
             />
+            <Link
+              href="/auth/forgot-password"
+              className="mt-1 block text-right text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400"
+            >
+              Forgot password?
+            </Link>
           </div>
 
           <button

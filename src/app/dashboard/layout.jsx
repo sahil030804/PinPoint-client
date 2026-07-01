@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Settings, Users, Bell } from 'lucide-react';
+import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Settings, Users, Bell, X } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useInvitations, useAcceptInvitation, useRejectInvitation } from '@/hooks/useWorkspace';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -29,11 +30,15 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [dismissedInvites, setDismissedInvites] = useState(new Set());
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, workspaces, activeWorkspaceId, switchWorkspace, logout } = useAuth();
+  const { user, loading, workspaces, activeWorkspaceId, switchWorkspace, logout, refreshWorkspaces } = useAuth();
   const { dark, toggleTheme } = useTheme();
   const { onActivity } = useWebSocket();
+  const { data: pendingInvitations = [] } = useInvitations();
+  const acceptInvite = useAcceptInvitation();
+  const rejectInvite = useRejectInvitation();
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
@@ -244,6 +249,46 @@ export default function DashboardLayout({ children }) {
         </header>
 
         <main className="flex-1 overflow-y-auto">
+          {pendingInvitations.filter((inv) => !dismissedInvites.has(inv.id)).length > 0 && (
+            <div className="border-b border-blue-200 bg-blue-50 px-6 py-3 dark:border-blue-800 dark:bg-blue-900/20">
+              {pendingInvitations.filter((inv) => !dismissedInvites.has(inv.id)).map((inv) => (
+                <div key={inv.id} className="flex items-center justify-between text-sm">
+                  <span className="text-blue-800 dark:text-blue-200">
+                    You've been invited to <strong>{inv.Workspace?.name || 'a workspace'}</strong>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={async () => {
+                        await acceptInvite.mutateAsync(inv.id);
+                        refreshWorkspaces();
+                        setDismissedInvites((prev) => new Set(prev).add(inv.id));
+                      }}
+                      disabled={acceptInvite.isPending}
+                      className="rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-50"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await rejectInvite.mutateAsync(inv.id);
+                        setDismissedInvites((prev) => new Set(prev).add(inv.id));
+                      }}
+                      disabled={rejectInvite.isPending}
+                      className="rounded-md border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      onClick={() => setDismissedInvites((prev) => new Set(prev).add(inv.id))}
+                      className="text-blue-400 hover:text-blue-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {children}
         </main>
       </div>
