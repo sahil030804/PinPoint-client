@@ -13,6 +13,37 @@ import { RadixSelect } from '@/components/common/RadixSelect';
 import { ScreenshotThumbnail } from '@/components/feedback/ScreenshotThumbnail';
 import { FeedbackInlineField, STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/components/feedback/FeedbackInlineField';
 
+function getPathname(url) {
+  try {
+    return url ? new URL(url).pathname : '—';
+  } catch {
+    return '—';
+  }
+}
+
+function handleExportCSV(user, apiFilters) {
+  const token = localStorage.getItem('pp_token');
+  if (!token || !user?.workspaceId) return;
+
+  const params = new URLSearchParams();
+  if (apiFilters.status) params.set('status', apiFilters.status);
+  if (apiFilters.priority) params.set('priority', apiFilters.priority);
+  if (apiFilters.search) params.set('search', apiFilters.search);
+  const query = params.toString();
+  const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1'}/feedback/workspace/${user.workspaceId}/export${query ? `?${query}` : ''}`;
+
+  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    .then((res) => res.blob())
+    .then((blob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `feedback-export-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(() => {});
+}
+
 export default function InboxPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -79,7 +110,7 @@ export default function InboxPage() {
       render: (item) => (
         <div>
           <p className="font-medium text-gray-900 dark:text-white">{item.title || item.comment?.slice(0, 60)}</p>
-          <p className="text-xs text-gray-500">{item.Website?.Project?.name || ''} — {item.pageUrl}</p>
+          <p className="text-xs text-gray-500">{item.Website?.Project?.name || ''} — {item.pageUrl || '—'}</p>
         </div>
       ),
     },
@@ -88,7 +119,7 @@ export default function InboxPage() {
       header: 'Page',
       render: (item) => (
         <span className="text-xs text-gray-500 dark:text-gray-400">
-          {item.pageUrl ? new URL(item.pageUrl).pathname : '—'}
+          {getPathname(item.pageUrl)}
         </span>
       ),
     },
@@ -141,6 +172,12 @@ export default function InboxPage() {
           ]}
           triggerClassName="w-auto"
         />
+        <button
+          onClick={() => handleExportCSV(user, apiFilters)}
+          className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 whitespace-nowrap"
+        >
+          Export CSV
+        </button>
       </PageHeader>
 
       <div className="p-6">

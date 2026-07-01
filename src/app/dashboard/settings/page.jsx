@@ -1,13 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { useWorkspace, useUpdateWorkspace } from '@/hooks/useWorkspace';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/common/PageHeader';
 
+const SETTINGS_TABS = [
+  { label: 'General', href: '/dashboard/settings' },
+  { label: 'API Keys', href: '/dashboard/settings/api-keys' },
+];
+
 export default function SettingsPage() {
+  const pathname = usePathname();
   const { user, updateUser } = useAuth();
   const { data: workspace, isLoading } = useWorkspace(user?.workspaceId);
   const updateWorkspace = useUpdateWorkspace();
@@ -92,6 +101,26 @@ export default function SettingsPage() {
   return (
     <div>
       <PageHeader title="Settings" description="Manage your account and workspace." />
+
+      <div className="border-b border-gray-200 px-6 dark:border-gray-800">
+        <nav className="-mb-px flex gap-6">
+          {SETTINGS_TABS.map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={cn(
+                'border-b-2 px-1 pb-3 text-sm font-medium transition-colors',
+                pathname === tab.href
+                  ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+              )}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
       <div className="p-6 max-w-2xl space-y-8">
         <form onSubmit={handleSave} className="space-y-6">
           <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">

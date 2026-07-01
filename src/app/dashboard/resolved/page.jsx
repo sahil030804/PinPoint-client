@@ -68,7 +68,7 @@ export default function ResolvedPage() {
       render: (item) => (
         <div>
           <p className="font-medium text-gray-900 dark:text-white">{item.title || item.comment?.slice(0, 60)}</p>
-          <p className="text-xs text-gray-500">{item.Website?.Project?.name || ''} — {item.pageUrl}</p>
+          <p className="text-xs text-gray-500">{item.Website?.Project?.name || ''} — {item.pageUrl || '—'}</p>
         </div>
       ),
     },
