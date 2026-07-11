@@ -70,7 +70,7 @@ export function FeedbackInlineField({ feedbackId, field, value, options, renderD
       </button>
       {open && (
         <div
-          className="absolute left-1/2 z-50 mt-1 min-w-[140px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          className="absolute left-1/2 z-50 mt-1 min-w-[140px] -translate-x-1/2 rounded-[3px] border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
           onMouseDown={(e) => e.stopPropagation()}
         >
           {options.map((opt) => (

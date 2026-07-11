@@ -10,7 +10,7 @@ function generateId() {
   return Math.random().toString(36).substring(2, 9);
 }
 
-export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) {
+function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) {
   const [annotations, setAnnotations] = useState(initialAnnotations);
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [mode, setMode] = useState('draw');
@@ -25,6 +25,7 @@ export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onCl
   const imgRef = useRef(null);
   const imageWrapRef = useRef(null);
   const prevMouseRef = useRef(null);
+  const drawingRef = useRef(null);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -110,7 +111,9 @@ export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onCl
       return;
     }
 
-    setDrawing({ startX: frac.x, startY: frac.y, currentX: frac.x, currentY: frac.y });
+    const newDrawing = { startX: frac.x, startY: frac.y, currentX: frac.x, currentY: frac.y };
+    drawingRef.current = newDrawing;
+    setDrawing(newDrawing);
     prevMouseRef.current = { x: e.clientX, y: e.clientY };
   }
 
@@ -120,10 +123,11 @@ export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onCl
       return;
     }
 
-    if (!drawing) return;
+    if (!drawingRef.current) return;
     const frac = getFraction(e.clientX, e.clientY);
     if (!frac) return;
-    setDrawing((d) => ({ ...d, currentX: frac.x, currentY: frac.y }));
+    drawingRef.current = { ...drawingRef.current, currentX: frac.x, currentY: frac.y };
+    setDrawing(drawingRef.current);
   }
 
   function handleMouseUp() {
@@ -132,17 +136,19 @@ export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onCl
       return;
     }
 
-    if (!drawing) return;
-    const x = Math.min(drawing.startX, drawing.currentX);
-    const y = Math.min(drawing.startY, drawing.currentY);
-    const w = Math.abs(drawing.currentX - drawing.startX);
-    const h = Math.abs(drawing.currentY - drawing.startY);
+    if (!drawingRef.current) return;
+    const d = drawingRef.current;
+    const x = Math.min(d.startX, d.currentX);
+    const y = Math.min(d.startY, d.currentY);
+    const w = Math.abs(d.currentX - d.startX);
+    const h = Math.abs(d.currentY - d.startY);
     if (w > 0.005 && h > 0.005) {
       setAnnotations((prev) => [
         ...prev,
         { id: generateId(), x, y, width: w, height: h, color: selectedColor, label: '' },
       ]);
     }
+    drawingRef.current = null;
     setDrawing(null);
   }
 
@@ -177,13 +183,13 @@ export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onCl
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="rounded-lg border border-white/20 px-4 py-1.5 text-sm text-white hover:bg-white/10"
+            className="rounded-[3px] border border-white/20 px-4 py-1.5 text-sm text-white hover:bg-white/10"
           >
             Cancel
           </button>
           <button
             onClick={() => onSave(annotations)}
-            className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+            className="rounded-[3px] bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
           >
             Save Annotations
           </button>
@@ -325,3 +331,5 @@ export function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onCl
     </motion.div>
   );
 }
+
+export default ScreenshotAnnotator;

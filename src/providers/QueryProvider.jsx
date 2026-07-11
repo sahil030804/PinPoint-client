@@ -11,7 +11,7 @@ export function QueryProvider({ children }) {
           queries: {
             staleTime: 30_000,
             retry: 2,
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true,
           },
         },
       })

@@ -1,57 +1,334 @@
+@import "tw-animate-css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    --page: 220 14% 96%;
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 46%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 221 83% 96%;
+    --accent-foreground: 221 83% 53%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
+    --radius: 0.5rem;
     --tooltip-bg: #fff;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83% 53.3%;
-    --radius: 0.75rem;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 9% 46%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 221 83% 53%;
+
+    --status-todo-bg: 220 14% 96%;
+    --status-todo-text: 220 9% 46%;
+    --status-in-progress-bg: 221 83% 96%;
+    --status-in-progress-text: 221 83% 43%;
+    --status-done-bg: 142 71% 94%;
+    --status-done-text: 142 71% 29%;
+    --status-blocked-bg: 0 84% 95%;
+    --status-blocked-text: 0 84% 60%;
+
+    --priority-highest-bg: 0 84% 95%;
+    --priority-highest-text: 0 84% 60%;
+    --priority-high-bg: 25 95% 93%;
+    --priority-high-text: 25 95% 42%;
+    --priority-medium-bg: 38 92% 90%;
+    --priority-medium-text: 38 92% 50%;
+    --priority-low-bg: 142 71% 94%;
+    --priority-low-text: 142 41% 46%;
+
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --page: 222 47% 6%;
+    --background: 222 47% 9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --tooltip-bg: #1f2937;
+    --card: 222 47% 9%;
     --card-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 9%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 91% 30%;
+    --accent-foreground: 217 91% 90%;
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 224 76% 48%;
+    --tooltip-bg: #1e293b;
+    --sidebar: 222 47% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 20%;
+    --sidebar-ring: 224 76% 48%;
+
+    --status-todo-bg: 217 33% 17%;
+    --status-todo-text: 215 20% 65%;
+    --status-in-progress-bg: 217 91% 30%;
+    --status-in-progress-text: 217 91% 90%;
+    --status-done-bg: 142 71% 25%;
+    --status-done-text: 142 71% 80%;
+    --status-blocked-bg: 0 63% 30%;
+    --status-blocked-text: 0 84% 95%;
+
+    --priority-highest-bg: 0 63% 30%;
+    --priority-highest-text: 0 84% 95%;
+    --priority-high-bg: 25 95% 30%;
+    --priority-high-text: 25 95% 93%;
+    --priority-medium-bg: 38 92% 30%;
+    --priority-medium-text: 38 92% 90%;
+    --priority-low-bg: 142 41% 25%;
+    --priority-low-text: 142 71% 80%;
+
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-page text-foreground antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    @apply font-sans scroll-smooth;
+    transition: color 0.3s ease, background-color 0.3s ease;
+  }
+
+  /* Modern SaaS typography scale */
+  h1 {
+    @apply text-foreground font-bold tracking-tight;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+  h2 {
+    @apply text-foreground font-semibold tracking-tight;
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  h3 {
+    @apply text-foreground font-semibold;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer components {
+  .saas-card {
+    @apply rounded-xl border border-border bg-card text-card-foreground;
+    box-shadow: var(--shadow-sm);
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .saas-label {
+    @apply block text-sm font-medium text-foreground mb-1.5;
+  }
+
+  .saas-hint {
+    @apply mt-1 text-xs text-muted-foreground;
+  }
+
+  .saas-input {
+    @apply block w-full rounded-lg border border-border bg-background text-sm text-foreground;
+    @apply px-3.5 py-[9px] leading-5;
+    @apply placeholder:text-muted-foreground/45;
+    @apply transition-all duration-150 ease-out;
+    @apply shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)];
+  }
+  .saas-input:hover {
+    @apply border-muted-foreground/25;
+  }
+  .saas-input:focus {
+    @apply outline-none border-primary;
+    @apply ring-[3px] ring-primary/15;
+    @apply shadow-[inset_0_1px_2px_rgba(0,0,0,0.04),0_0_0_1px_rgba(59,130,246,0.1)];
+  }
+  .saas-input:disabled {
+    @apply bg-muted/40 text-muted-foreground/60 cursor-not-allowed border-border/60;
+    @apply shadow-none;
+  }
+  .saas-input::file-selector-button {
+    @apply mr-3 rounded-md border-0 bg-transparent px-2 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors;
+  }
+
+  .saas-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-[9px] text-sm font-semibold;
+    @apply transition-all duration-150 ease-out select-none;
+    @apply bg-primary text-primary-foreground;
+    @apply shadow-[0_1px_2px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)];
+    @apply hover:brightness-110 hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.06)];
+    @apply focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30 focus-visible:ring-offset-2;
+    @apply active:brightness-95 active:scale-[0.97] active:shadow-sm;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .saas-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-[9px] text-sm font-medium;
+    @apply transition-all duration-150 ease-out select-none;
+    @apply border border-border/80 bg-background text-foreground;
+    @apply shadow-[0_1px_2px_rgba(0,0,0,0.04)];
+    @apply hover:bg-muted hover:border-border;
+    @apply focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 focus-visible:ring-offset-2;
+    @apply active:scale-[0.97];
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .saas-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-[9px] text-sm font-medium;
+    @apply transition-all duration-150 ease-out select-none;
+    @apply bg-transparent text-muted-foreground;
+    @apply hover:bg-muted hover:text-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 focus-visible:ring-offset-2;
+    @apply active:scale-[0.97];
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .saas-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-[9px] text-sm font-semibold;
+    @apply transition-all duration-150 ease-out select-none;
+    @apply bg-destructive text-destructive-foreground;
+    @apply shadow-[0_1px_2px_rgba(0,0,0,0.08)];
+    @apply hover:brightness-110 hover:shadow-[0_4px_6px_rgba(0,0,0,0.1)];
+    @apply focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-destructive/30 focus-visible:ring-offset-2;
+    @apply active:brightness-95 active:scale-[0.97];
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .jira-card {
+    @apply rounded-xl border bg-card text-card-foreground;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .jira-lozenge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold;
+    line-height: 1;
+  }
+
+  .jira-table-header {
+    @apply bg-muted px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+  }
+
+  .jira-table-cell {
+    @apply px-4 py-3 text-sm text-foreground;
+  }
+
+  .jira-table-row {
+    @apply transition-colors hover:bg-muted/50;
   }
 }
+
+@layer utilities {
+  .bg-page {
+    background-color: hsl(var(--page));
+  }
+
+  .shadow-saas-xs { box-shadow: var(--shadow-xs); }
+  .shadow-saas-sm { box-shadow: var(--shadow-sm); }
+  .shadow-saas-md { box-shadow: var(--shadow-md); }
+  .shadow-saas-lg { box-shadow: var(--shadow-lg); }
+  .shadow-saas-xl { box-shadow: var(--shadow-xl); }
+
+  /* ── Auth page animations ── */
+  .auth-fade-in {
+    animation: authFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .auth-slide-up {
+    animation: authSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .auth-slide-up-delay {
+    animation: authSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+    opacity: 0;
+  }
+  .auth-slide-up-delay-2 {
+    animation: authSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    opacity: 0;
+  }
+  .auth-slide-up-delay-3 {
+    animation: authSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+    opacity: 0;
+  }
+  .auth-scale-in {
+    animation: authScaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+}
+
+/* ── Reduced motion support ── */
+@media (prefers-reduced-motion: reduce) {
+  .auth-fade-in,
+  .auth-slide-up,
+  .auth-slide-up-delay,
+  .auth-slide-up-delay-2,
+  .auth-slide-up-delay-3,
+  .auth-scale-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .saas-input,
+  .saas-btn-primary,
+  .saas-btn-secondary,
+  .saas-btn-ghost,
+  .saas-btn-danger {
+    transition: none !important;
+  }
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes authSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes authScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+

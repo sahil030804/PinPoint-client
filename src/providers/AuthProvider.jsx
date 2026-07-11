@@ -74,9 +74,8 @@ export function AuthProvider({ children }) {
     }
     api.setToken(token);
     (async () => {
-      const u = await fetchUser();
+      const [u, ws] = await Promise.all([fetchUser(), fetchWorkspaces()]);
       if (u) {
-        const ws = await fetchWorkspaces();
         const stored = localStorage.getItem('pp_active_workspace');
         if (stored && ws.some((w) => w.id === stored)) {
           setActiveWorkspaceId(stored);

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '@/lib/api';
 import { useToast } from '@/providers/ToastProvider';
+import { api } from '@/lib/api';
+import { ArrowLeft, Lock, Check } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -49,76 +50,118 @@ export default function ResetPasswordPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="w-full max-w-sm text-center">
-          <Link href="/" className="mb-8 block text-center text-2xl font-bold text-gray-900 dark:text-white">
-            PinPoint
+      <div className="flex min-h-screen items-center justify-center px-6 bg-background">
+        <div className="w-full max-w-md text-center auth-scale-in">
+          <Link href="/" className="mb-10 block">
+            <span className="text-2xl font-bold text-foreground tracking-tight">PinPoint</span>
           </Link>
-          <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/30">
+            <Check size={28} className="text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Password reset successful</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Redirecting to dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <Link href="/" className="mb-8 block text-center text-2xl font-bold text-gray-900 dark:text-white">
-          PinPoint
-        </Link>
-        <h1 className="text-center text-xl font-semibold text-gray-900 dark:text-white">Set new password</h1>
+    <div className="flex min-h-screen">
+      {/* Left side — Brand panel */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-blue-700 items-center justify-center">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzEuNjYgMCAzLTEuMzQgMy0zcy0xLjM0LTMtMy0zLTMgMS4zNC0zIDMgMS4zNCAzIDMgM3oiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
+        <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              New password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              placeholder="At least 8 characters"
-            />
+        <div className="relative z-10 max-w-md px-8 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 mb-8 auth-fade-in">
+            <Lock size={14} className="text-white/80" />
+            <span className="text-sm font-medium text-white/90">Encrypted &amp; secure</span>
           </div>
+          <h2 className="text-3xl font-bold text-white tracking-tight leading-tight auth-slide-up">
+            Almost there.<br />Set a new password.
+          </h2>
+          <p className="mt-4 text-lg text-blue-100/80 leading-relaxed auth-slide-up-delay">
+            Choose a strong password to keep your account secure.
+          </p>
+        </div>
+      </div>
 
-          <div>
-            <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Confirm password
-            </label>
-            <input
-              id="confirm"
-              type="password"
-              required
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              placeholder="Repeat your password"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50 active:scale-[0.97] transition-transform"
-          >
-            {loading ? 'Resetting...' : 'Reset password'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-            Back to login
+      {/* Right side — Form */}
+      <div className="flex flex-1 items-center justify-center px-6 py-12 bg-background">
+        <div className="w-full max-w-md">
+          <Link href="/" className="mb-10 block auth-fade-in">
+            <span className="text-2xl font-bold text-foreground tracking-tight">PinPoint</span>
           </Link>
-        </p>
+          <div className="auth-slide-up">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Set new password</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Enter your new password below.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {error && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive auth-slide-up">
+                {error}
+              </div>
+            )}
+
+            <div className="auth-slide-up-delay">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
+                New password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="saaS-input"
+                placeholder="At least 8 characters"
+              />
+            </div>
+
+            <div className="auth-slide-up-delay">
+              <label htmlFor="confirm" className="block text-sm font-medium text-foreground mb-1.5">
+                Confirm password
+              </label>
+              <input
+                id="confirm"
+                type="password"
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="saaS-input"
+                placeholder="Repeat your password"
+              />
+            </div>
+
+            <div className="auth-slide-up-delay-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="saaS-btn-primary w-full h-11 text-sm"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    Resetting...
+                  </span>
+                ) : (
+                  'Reset password'
+                )}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-8 text-center auth-slide-up-delay-3">
+            <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft size={14} />
+              Back to sign in
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

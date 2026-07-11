@@ -1,7 +1,17 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from './EmptyState';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
 
 export function DataTable({
   columns,
@@ -37,32 +47,32 @@ export function DataTable({
 
   if (loading) {
     return (
-      <div className="animate-pulse overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-          <thead className="bg-gray-50 dark:bg-gray-900">
-            <tr>
+      <div className="animate-pulse">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {columns.map((col) => (
-                <th key={col.key} className="px-4 py-3">
-                  <div className="h-3 w-16 rounded bg-gray-200 dark:bg-gray-800" />
-                </th>
+                <TableHead key={col.key}>
+                  <div className="h-3 w-16 rounded-sm bg-[#DFE1E6] dark:bg-[#344563]" />
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-950">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i}>
+              <TableRow key={i}>
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3">
+                  <TableCell key={col.key}>
                     <div
-                      className="h-4 rounded bg-gray-100 dark:bg-gray-800"
+                      className="h-4 rounded-sm bg-[#EBECF0] dark:bg-[#253858]"
                       style={{ width: `${70 + ((col.key.length + i) % 3) * 10}%` }}
                     />
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     );
   }
@@ -72,68 +82,98 @@ export function DataTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-        <thead className="bg-gray-50 dark:bg-gray-900">
-          <tr>
+    <div>
+      <Table>
+        <TableHeader>
+          <TableRow>
             {columns.map((col) => (
-              <th
+              <TableHead
                 key={col.key}
-                className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 ${
-                  col.sortable ? 'cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200' : ''
-                }`}
+                className={col.sortable ? 'cursor-pointer select-none hover:text-[#172B4D] dark:hover:text-white' : ''}
                 style={col.width ? { width: col.width } : undefined}
                 onClick={() => col.sortable && handleSort(col.key)}
               >
                 <div className="flex items-center gap-1">
                   {col.header}
-                  {col.sortable && sortKey === col.key && (
-                    <span className="text-gray-400">{sortDir === 'asc' ? '↑' : '↓'}</span>
+                  {col.sortable && (
+                    <span className="text-[#6B778C]">
+                      {sortKey === col.key ? (
+                        sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                      ) : (
+                        <ChevronUp size={12} className="opacity-0 group-hover:opacity-50" />
+                      )}
+                    </span>
                   )}
                 </div>
-              </th>
+              </TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-950">
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {sortedData.map((item, index) => (
-            <tr
+            <TableRow
               key={item.id || index}
-              className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-900 ${
-                onRowClick ? 'cursor-pointer' : ''
-              }`}
+              className={onRowClick ? 'cursor-pointer' : ''}
               onClick={() => onRowClick?.(item)}
             >
               {columns.map((col) => (
-                <td key={col.key} className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                <TableCell key={col.key}>
                   {col.render ? col.render(item) : item[col.key]}
-                </td>
+                </TableCell>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between border-t border-[#DFE1E6] px-2 py-3 dark:border-[#344563]">
+          <p className="text-xs text-[#5E6C84] dark:text-[#A5ADBA]">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </p>
-          <div className="flex gap-2">
-            <button
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
               disabled={pagination.page <= 1}
-              className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50 active:scale-95 transition-transform dark:border-gray-600"
               onClick={() => onPageChange?.(pagination.page - 1)}
             >
+              <ChevronLeft size={14} />
               Previous
-            </button>
-            <button
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => {
+                let pageNum;
+                if (pagination.totalPages <= 7) {
+                  pageNum = i + 1;
+                } else if (pagination.page <= 4) {
+                  pageNum = i + 1;
+                } else if (pagination.page >= pagination.totalPages - 3) {
+                  pageNum = pagination.totalPages - 6 + i;
+                } else {
+                  pageNum = pagination.page - 3 + i;
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === pagination.page ? 'default' : 'outline'}
+                    size="xs"
+                    onClick={() => onPageChange?.(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={pagination.page >= pagination.totalPages}
-              className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50 active:scale-95 transition-transform dark:border-gray-600"
               onClick={() => onPageChange?.(pagination.page + 1)}
             >
               Next
-            </button>
+              <ChevronRight size={14} />
+            </Button>
           </div>
         </div>
       )}

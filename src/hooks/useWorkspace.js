@@ -51,6 +51,7 @@ export function useWorkspaceFeedback(workspaceId, filters = {}) {
     queryKey: ['feedback', 'workspace', workspaceId, filters],
     queryFn: () => api.get(`/feedback/workspace/${workspaceId}${query ? `?${query}` : ''}`),
     staleTime: 15_000,
+    refetchOnWindowFocus: true,
     select: (res) => res,
     enabled: !!workspaceId,
   });
