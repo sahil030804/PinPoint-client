@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { useWorkspace, useUpdateWorkspace, useWorkspaceStats } from '@/hooks/useWorkspace';
@@ -116,6 +116,40 @@ export default function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState('profile');
 
+  const avatarInputRef = useRef(null);
+  const logoInputRef = useRef(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarData, setAvatarData] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoData, setLogoData] = useState(null);
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await fileToBase64(file);
+    setAvatarPreview(dataUrl);
+    setAvatarData(dataUrl);
+    e.target.value = '';
+  }
+
+  async function handleLogoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await fileToBase64(file);
+    setLogoPreview(dataUrl);
+    setLogoData(dataUrl);
+    e.target.value = '';
+  }
+
   useEffect(() => {
     if (user?.name) {
       const parts = user.name.trim().split(' ');
@@ -132,11 +166,16 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     try {
+      const payload = {};
       const fullName = `${firstName} ${lastName}`.trim();
-      if (fullName !== user?.name) {
-        const res = await api.put('/auth/me', { name: fullName });
+      if (fullName !== user?.name) payload.name = fullName;
+      if (avatarData) payload.avatarData = avatarData;
+
+      if (Object.keys(payload).length > 0) {
+        const res = await api.put('/auth/me', payload);
         if (res.success) {
-          updateUser({ name: res.data.name });
+          updateUser(res.data);
+          setAvatarData(null);
         } else {
           throw new Error(res.error?.message || 'Failed to update profile');
         }
@@ -153,12 +192,14 @@ export default function SettingsPage() {
     e.preventDefault();
     setSavingWorkspace(true);
     try {
-      if (workspaceName !== workspace?.name) {
-        const res = await updateWorkspace.mutateAsync({
-          id: user?.workspaceId,
-          name: workspaceName,
-        });
+      const payload = { id: user?.workspaceId };
+      if (workspaceName !== workspace?.name) payload.name = workspaceName;
+      if (logoData) payload.logoData = logoData;
+
+      if (Object.keys(payload).length > 1) {
+        const res = await updateWorkspace.mutateAsync(payload);
         if (!res.success) throw new Error(res.error?.message);
+        setLogoData(null);
       }
       toastSuccess('Workspace settings saved.');
     } catch (err) {
@@ -292,12 +333,27 @@ export default function SettingsPage() {
                 {/* Avatar */}
                 <div className="flex items-center gap-5 pb-1">
                   <div className="relative">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-white text-xl font-semibold shadow-sm">
-                      {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-white text-xl font-semibold shadow-sm overflow-hidden">
+                      {avatarPreview || user?.avatarUrl ? (
+                        <img
+                          src={avatarPreview || user?.avatarUrl}
+                          alt="Avatar"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        user?.name?.charAt(0)?.toUpperCase() || '?'
+                      )}
                     </div>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
                     <button
                       type="button"
-                      onClick={() => toastError('Profile picture upload coming soon.')}
+                      onClick={() => avatarInputRef.current?.click()}
                       className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm ring-2 ring-background transition-transform hover:scale-105 active:scale-95 cursor-pointer"
                     >
                       <Camera size={11} />
@@ -402,13 +458,28 @@ export default function SettingsPage() {
                 <div>
                   <label className="saas-label">Workspace Logo</label>
                   <div className="flex items-center gap-4 mt-1.5">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xl font-bold shadow-sm ring-1 ring-border/60">
-                      {workspaceName?.charAt(0)?.toUpperCase() || 'A'}
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xl font-bold shadow-sm ring-1 ring-border/60 overflow-hidden">
+                      {logoPreview || workspace?.logoUrl ? (
+                        <img
+                          src={logoPreview || workspace?.logoUrl}
+                          alt="Logo"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        workspaceName?.charAt(0)?.toUpperCase() || 'A'
+                      )}
                     </div>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                      className="hidden"
+                      onChange={handleLogoChange}
+                    />
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => toastError('Logo upload coming soon.')}
+                        onClick={() => logoInputRef.current?.click()}
                         className="saas-btn-secondary"
                       >
                         <Upload size={14} />
@@ -416,7 +487,17 @@ export default function SettingsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => toastError('No logo to remove.')}
+                        onClick={async () => {
+                          try {
+                            const res = await updateWorkspace.mutateAsync({ id: user?.workspaceId, logoUrl: null });
+                            if (!res.success) throw new Error(res.error?.message);
+                            setLogoPreview(null);
+                            setLogoData(null);
+                            toastSuccess('Logo removed.');
+                          } catch (err) {
+                            toastError(err.message || 'Failed to remove logo');
+                          }
+                        }}
                         className="saas-btn-secondary"
                       >
                         <Trash2 size={14} />

@@ -85,7 +85,7 @@ export default function ProjectsPage() {
       <PageHeader title="Projects" description="Manage your active workspace and feedback boards.">
         <button
           onClick={() => setShowCreate(true)}
-          className="saaS-btn-primary h-9 text-sm"
+          className="saas-btn-primary h-9 text-sm"
         >
           <Plus size={16} />
           New Project
@@ -105,7 +105,7 @@ export default function ProjectsPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="saaS-input"
+                  className="saas-input"
                   placeholder="My Project"
                 />
               </div>
@@ -115,7 +115,7 @@ export default function ProjectsPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
-                  className="saaS-input resize-none"
+                  className="saas-input resize-none"
                   placeholder="What is this project about?"
                 />
               </div>
@@ -123,14 +123,14 @@ export default function ProjectsPage() {
                 <button
                   type="submit"
                   disabled={createProject.isPending || !name.trim()}
-                  className="saaS-btn-primary disabled:opacity-50 h-9 text-sm"
+                  className="saas-btn-primary disabled:opacity-50 h-9 text-sm"
                 >
                   {createProject.isPending ? 'Creating...' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowCreate(false); setName(''); setDescription(''); }}
-                  className="saaS-btn-secondary h-9 text-sm"
+                  className="saas-btn-secondary h-9 text-sm"
                 >
                   Cancel
                 </button>
@@ -219,7 +219,7 @@ export default function ProjectsPage() {
             action={
               <button
                 onClick={() => setShowCreate(true)}
-                className="saaS-btn-primary h-9 text-sm"
+                className="saas-btn-primary h-9 text-sm"
               >
                 <Plus size={16} />
                 Create Project

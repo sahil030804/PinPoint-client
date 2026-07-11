@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  MapPin, Camera, Code, MessageCircle, RefreshCw,
-  ArrowRight, Twitter, Linkedin,
+  MapPin, Camera, Code, MessageCircle, RefreshCw, ArrowRight,
 } from 'lucide-react';
+import { PublicNavbar } from '@/components/common/PublicNavbar';
+import { PublicFooter } from '@/components/common/PublicFooter';
 
 const FEATURES = [
   {
@@ -16,23 +17,49 @@ const FEATURES = [
     visual: (
       <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-6 shadow-sm">
         <div className="aspect-[4/3] rounded-xl bg-white dark:bg-gray-800 relative overflow-hidden">
-          <div className="absolute inset-0 p-4">
-            <div className="h-3 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-3" />
-            <div className="flex gap-3 mb-4">
-              <div className="h-16 w-20 rounded-lg bg-gray-100 dark:bg-gray-700" />
-              <div className="flex-1 space-y-2">
-                <div className="h-2 w-full rounded bg-gray-200 dark:bg-gray-700" />
-                <div className="h-2 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
-                <div className="h-2 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="absolute inset-0 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-4 w-4 rounded bg-blue-600" />
+              <div className="h-2.5 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+              <div className="ml-auto flex gap-2">
+                <div className="h-2 w-10 rounded bg-gray-200 dark:bg-gray-700" />
+                <div className="h-2 w-10 rounded bg-gray-200 dark:bg-gray-700" />
               </div>
             </div>
+            <div className="flex gap-4 mb-4">
+              <div className="h-14 w-20 rounded-lg bg-gray-100 dark:bg-gray-700" />
+              <div className="flex-1 space-y-2">
+                <div className="h-2.5 w-full rounded bg-gray-200 dark:bg-gray-700" />
+                <div className="h-2.5 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+                <div className="h-2.5 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className={`rounded-lg border p-3 ${i === 1 ? 'border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 ring-2 ring-blue-500/20' : 'border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-800/50'}`}>
+                  <div className="h-2 w-full rounded bg-gray-200 dark:bg-gray-700 mb-2" />
+                  <div className="h-2 w-3/4 rounded bg-gray-200 dark:bg-gray-700 mb-2" />
+                  <div className="h-2 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="absolute top-8 left-16 z-10">
-            <div className="relative">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white shadow-lg">1</div>
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-xl">
-                <p className="text-xs font-semibold text-gray-900 dark:text-white">John Doe</p>
-                <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">Update the padding on this card component.</p>
+          <div className="absolute" style={{ top: '70px', left: 'calc(50% + 10px)' }}>
+            <div className="flex flex-col items-center">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white shadow-lg shadow-blue-500/40 ring-2 ring-white dark:ring-gray-800 z-10">
+                1
+              </div>
+              <div className="h-7 w-px bg-gradient-to-b from-blue-500/80 to-blue-400/60 dark:from-blue-400/80 dark:to-blue-500/40" />
+              <div className="relative -mt-px w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-xl">
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-3 rotate-45 border-l border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" />
+                <p className="text-xs font-semibold text-gray-900 dark:text-white">John D.</p>
+                <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
+                  Update the padding on this card component &mdash; it looks cramped on mobile.
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-[9px] font-medium text-gray-500 dark:text-gray-400">#ui</span>
+                  <span className="rounded bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 text-[9px] font-medium text-blue-600 dark:text-blue-400">medium</span>
+                </div>
               </div>
             </div>
           </div>
@@ -203,29 +230,7 @@ function FeatureSection({ feature, index }) {
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl sticky top-0 z-50">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            PinPoint
-          </Link>
-          <div className="hidden sm:flex items-center gap-6">
-            <Link href="/features" className="text-sm font-medium text-blue-600 dark:text-blue-400">Features</Link>
-            <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Pricing</Link>
-            <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">About</Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-              Login
-            </Link>
-            <Link
-              href="/auth/register"
-              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25"
-            >
-              Get Started Free
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <PublicNavbar active="/features" />
 
       <section className="mx-auto max-w-7xl px-6 pt-24 pb-8 sm:pt-32 sm:pb-12">
         <motion.div
@@ -276,28 +281,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      <footer className="border-t border-gray-200 dark:border-gray-800 py-10">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} PinPoint. All rights reserved.
-            </div>
-            <div className="flex items-center gap-6 text-sm">
-              <Link href="/" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Product</Link>
-              <Link href="/features" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Features</Link>
-              <Link href="/pricing" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Pricing</Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" aria-label="Twitter">
-                <Twitter size={18} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" aria-label="LinkedIn">
-                <Linkedin size={18} />
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

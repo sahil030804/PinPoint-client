@@ -400,7 +400,7 @@ export default function DashboardLayout({ children }) {
                         setDismissedInvites((prev) => new Set(prev).add(inv.id));
                       }}
                       disabled={acceptInvite.isPending}
-                      className="saaS-btn-primary disabled:opacity-50 h-8 text-xs"
+                      className="saas-btn-primary disabled:opacity-50 h-8 text-xs"
                     >
                       Accept
                     </button>
@@ -410,7 +410,7 @@ export default function DashboardLayout({ children }) {
                         setDismissedInvites((prev) => new Set(prev).add(inv.id));
                       }}
                       disabled={rejectInvite.isPending}
-                      className="saaS-btn-secondary disabled:opacity-50 h-8 text-xs"
+                      className="saas-btn-secondary disabled:opacity-50 h-8 text-xs"
                     >
                       Decline
                     </button>

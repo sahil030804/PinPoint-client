@@ -140,7 +140,7 @@ export default function SetupWorkspacePage() {
           )}
 
           {mode === 'create' && (
-            <div className="saaS-card p-6 auth-scale-in">
+            <div className="saas-card p-6 auth-scale-in">
               <h3 className="text-lg font-semibold text-foreground">Create Workspace</h3>
               <p className="mt-1 text-sm text-muted-foreground">Give your workspace a name to get started.</p>
               <form onSubmit={handleCreate} className="mt-5 space-y-4">
@@ -151,7 +151,7 @@ export default function SetupWorkspacePage() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="saaS-input"
+                    className="saas-input"
                     placeholder="e.g. Acme Corp"
                     autoFocus
                   />
@@ -172,7 +172,7 @@ export default function SetupWorkspacePage() {
                   <button
                     type="button"
                     onClick={() => { setMode(null); setName(''); }}
-                    className="saaS-btn-secondary h-10 text-sm"
+                    className="saas-btn-secondary h-10 text-sm"
                   >
                     <ArrowLeft size={16} />
                   </button>

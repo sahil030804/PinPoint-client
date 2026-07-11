@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="At least 8 characters"
               />
             </div>
@@ -132,7 +132,7 @@ export default function ResetPasswordPage() {
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="Repeat your password"
               />
             </div>
@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="saaS-btn-primary w-full h-11 text-sm"
+                className="saas-btn-primary w-full h-11 text-sm"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

@@ -115,7 +115,7 @@ export default function ProjectDetailPage() {
       >
         <button
           onClick={() => setShowWidgetModal(true)}
-          className="saaS-btn-primary h-9 text-sm"
+          className="saas-btn-primary h-9 text-sm"
         >
           Install Widget
         </button>
@@ -123,12 +123,12 @@ export default function ProjectDetailPage() {
 
       <div className="p-6 space-y-8">
         {/* Websites */}
-        <div className="saaS-card p-6">
+        <div className="saas-card p-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground">Websites</h3>
             <button
               onClick={() => setShowAddWebsite(true)}
-              className="saaS-btn-primary h-8 text-xs"
+              className="saas-btn-primary h-8 text-xs"
             >
               Add Website
             </button>
@@ -143,21 +143,21 @@ export default function ProjectDetailPage() {
                   required
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
-                  className="saaS-input"
+                  className="saas-input"
                   placeholder="https://example.com"
                 />
               </div>
               <button
                 type="submit"
                 disabled={addWebsite.isPending}
-                className="saaS-btn-primary h-9 text-sm shrink-0"
+                className="saas-btn-primary h-9 text-sm shrink-0"
               >
                 {addWebsite.isPending ? 'Adding...' : 'Add'}
               </button>
               <button
                 type="button"
                 onClick={() => { setShowAddWebsite(false); setWebsiteUrl(''); }}
-                className="saaS-btn-secondary h-9 text-sm shrink-0"
+                className="saas-btn-secondary h-9 text-sm shrink-0"
               >
                 Cancel
               </button>

@@ -70,7 +70,7 @@ export default function MembersPage() {
       <SettingsTabs />
 
       <div className="p-4 sm:p-6 max-w-2xl">
-        <div className="saaS-card p-6">
+        <div className="saas-card p-6">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -80,7 +80,7 @@ export default function MembersPage() {
             </div>
             <button
               onClick={() => setShowInvite(true)}
-              className="saaS-btn-primary h-8 text-xs"
+              className="saas-btn-primary h-8 text-xs"
             >
               <Plus size={14} />
               Invite Member
@@ -179,7 +179,7 @@ export default function MembersPage() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="colleague@company.com"
-                  className="saaS-input"
+                  className="saas-input"
                   autoFocus
                 />
               </div>
@@ -197,14 +197,14 @@ export default function MembersPage() {
                 <button
                   type="button"
                   onClick={() => { setShowInvite(false); setInviteEmail(''); }}
-                  className="saaS-btn-secondary h-9 text-sm"
+                  className="saas-btn-secondary h-9 text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={inviteMember.isPending || !inviteEmail.trim()}
-                  className="saaS-btn-primary disabled:opacity-50 h-9 text-sm"
+                  className="saas-btn-primary disabled:opacity-50 h-9 text-sm"
                 >
                   <Mail size={14} />
                   {inviteMember.isPending ? 'Sending...' : 'Send Invite'}

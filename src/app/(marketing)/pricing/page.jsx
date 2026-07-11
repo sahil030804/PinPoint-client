@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight, Star } from 'lucide-react';
+import { PublicNavbar } from '@/components/common/PublicNavbar';
+import { PublicFooter } from '@/components/common/PublicFooter';
 
 const PLANS = [
   {
@@ -180,40 +182,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      {/* Navbar */}
-      <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl sticky top-0 z-50">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            PinPoint
-          </Link>
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/features" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-              Features
-            </Link>
-            <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-              Pricing
-            </Link>
-            <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-              About
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/auth/login"
-              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              href="/auth/register"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-all shadow-sm"
-            >
-              Get Started Free
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <PublicNavbar active="/pricing" />
 
       {/* Hero */}
       <section className="mx-auto max-w-7xl px-6 py-24">
@@ -284,80 +253,7 @@ export default function PricingPage() {
         </motion.div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="col-span-2 md:col-span-1">
-              <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                PinPoint
-              </Link>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Visual feedback for high-performance teams.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
-                Product
-              </h4>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/features" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
-                Company
-              </h4>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Careers
-                  </span>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
-                Support
-              </h4>
-              <ul className="space-y-2">
-                <li>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Help Center
-                  </span>
-                </li>
-                <li>
-                  <a
-                    href="mailto:sahil030804@gmail.com"
-                    className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-                  >
-                    Contact Us
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              &copy; {new Date().getFullYear()} PinPoint. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

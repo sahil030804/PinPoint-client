@@ -94,7 +94,7 @@ function RegisterForm() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="Your full name"
               />
             </div>
@@ -107,7 +107,7 @@ function RegisterForm() {
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="you@example.com"
               />
             </div>
@@ -121,7 +121,7 @@ function RegisterForm() {
                 minLength={8}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="At least 8 characters"
               />
               <p className="mt-1.5 text-xs text-muted-foreground">Must be at least 8 characters</p>
@@ -131,7 +131,7 @@ function RegisterForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="saaS-btn-primary w-full h-11 text-sm"
+                className="saas-btn-primary w-full h-11 text-sm"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

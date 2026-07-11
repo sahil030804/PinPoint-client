@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import {
   ArrowRight, CheckCircle, Zap, MousePointerClick,
-  Camera, Code, MessageSquare, Users, MapPin, Play,
-  BarChart3, ExternalLink
+  Camera, Code, MessageSquare, Users, Play, BarChart3, MapPin,
 } from 'lucide-react';
+import { PublicNavbar } from '@/components/common/PublicNavbar';
+import { PublicFooter } from '@/components/common/PublicFooter';
 
 function FadeIn({ children, delay = 0, direction = 'up' }) {
   const variants = {
@@ -21,54 +21,7 @@ function FadeIn({ children, delay = 0, direction = 'up' }) {
   );
 }
 
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50' : 'bg-transparent'}`}>
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-          <MapPin size={22} className="text-blue-600" />
-          PinPoint
-        </Link>
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/features" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Features</Link>
-          <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Pricing</Link>
-          <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">About</Link>
-          <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Login</Link>
-          <Link
-            href="/auth/register"
-            className="saaS-btn-primary rounded-lg px-5 py-2.5 text-sm"
-          >
-            Get Started Free
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-        <button className="md:hidden p-2 text-gray-600 dark:text-gray-400" onClick={() => setMobileOpen(!mobileOpen)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-      </nav>
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-6 py-4 space-y-3">
-            <Link href="/features" className="block text-sm text-gray-600 dark:text-gray-400">Features</Link>
-            <Link href="/pricing" className="block text-sm text-gray-600 dark:text-gray-400">Pricing</Link>
-            <Link href="/about" className="block text-sm text-gray-600 dark:text-gray-400">About</Link>
-            <Link href="/auth/login" className="block text-sm text-gray-600 dark:text-gray-400">Login</Link>
-            <Link href="/auth/register" className="block text-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Get Started Free</Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-}
 
 function HeroSection() {
   return (
@@ -378,7 +331,7 @@ function PricingSection() {
               <div className="mt-8">
                 <Link
                   href="/auth/register"
-                  className="saaS-btn-primary w-full justify-center px-6 py-3 text-base"
+                  className="saas-btn-primary w-full justify-center px-6 py-3 text-base"
                 >
                   Start Free Trial
                   <ArrowRight size={18} />
@@ -426,71 +379,18 @@ function FinalCTASection() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 py-16">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-              <MapPin size={20} className="text-blue-600" />
-              PinPoint
-            </Link>
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 max-w-xs leading-relaxed">
-              Visual website feedback for modern teams. Click anywhere. Leave feedback. Ship faster.
-            </p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Product</h4>
-            <div className="space-y-3">
-              <Link href="/features" className="block text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Features</Link>
-              <Link href="/pricing" className="block text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Pricing</Link>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Company</h4>
-            <div className="space-y-3">
-              <Link href="/about" className="block text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">About</Link>
-              <Link href="/auth/register" className="block text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Get Started</Link>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Connect</h4>
-            <div className="space-y-3">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                Twitter
-                <ExternalLink size={12} />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                LinkedIn
-                <ExternalLink size={12} />
-              </a>
-              <Link href="/support" className="block text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Support</Link>
-            </div>
-          </div>
-        </div>
-        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <p>&copy; {new Date().getFullYear()} PinPoint Inc. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <span className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer">Terms of Service</span>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
+
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      <Navbar />
+      <PublicNavbar active="" variant="hero" />
       <HeroSection />
       <HowItWorksSection />
       <FeaturesSection />
       <PricingSection />
       <FinalCTASection />
-      <Footer />
+      <PublicFooter />
     </div>
   );
 }

@@ -53,7 +53,7 @@ export default function NotificationsPage() {
       <SettingsTabs />
 
       <div className="p-4 sm:p-6 max-w-2xl">
-        <div className="saaS-card p-6">
+        <div className="saas-card p-6">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -70,7 +70,7 @@ export default function NotificationsPage() {
               <button
                 onClick={handleMarkAllRead}
                 disabled={markAllRead.isPending || unreadCount === 0}
-                className="saaS-btn-secondary disabled:opacity-50 h-8 text-xs"
+                className="saas-btn-secondary disabled:opacity-50 h-8 text-xs"
               >
                 <CheckCheck size={14} />
                 Mark All Read

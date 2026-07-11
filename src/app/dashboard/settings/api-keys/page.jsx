@@ -313,7 +313,7 @@ export default function ApiKeysPage() {
             </div>
             <button
               onClick={() => setShowCreate(true)}
-              className="saaS-btn-primary h-8 text-xs"
+              className="saas-btn-primary h-8 text-xs"
             >
               <Plus size={14} />
               Create API Key
@@ -324,7 +324,7 @@ export default function ApiKeysPage() {
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="saaS-card p-5 animate-pulse">
+                <div key={i} className="saas-card p-5 animate-pulse">
                   <div className="flex items-start justify-between">
                     <div className="space-y-2 flex-1">
                       <div className="h-4 w-32 rounded bg-muted" />
@@ -349,7 +349,7 @@ export default function ApiKeysPage() {
               {keys.map((key) => (
                 <div
                   key={key.id}
-                  className="saaS-card p-5 hover:bg-muted/20 transition-colors"
+                  className="saas-card p-5 hover:bg-muted/20 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -423,7 +423,7 @@ export default function ApiKeysPage() {
               </div>
               <button
                 onClick={() => setShowAddWebhook(true)}
-                className="saaS-btn-primary h-8 text-xs"
+                className="saas-btn-primary h-8 text-xs"
               >
                 <Plus size={14} />
                 Add Endpoint
@@ -433,7 +433,7 @@ export default function ApiKeysPage() {
             {webhooksLoading ? (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="saaS-card p-5 animate-pulse">
+                  <div key={i} className="saas-card p-5 animate-pulse">
                     <div className="space-y-2">
                       <div className="h-4 w-40 rounded bg-muted" />
                       <div className="h-3 w-full rounded bg-muted/50" />
@@ -453,7 +453,7 @@ export default function ApiKeysPage() {
                   <div
                     key={webhook.id}
                     className={cn(
-                      'saaS-card p-5 transition-colors',
+                      'saas-card p-5 transition-colors',
                       webhook.isActive ? '' : 'opacity-70'
                     )}
                   >
@@ -576,7 +576,7 @@ export default function ApiKeysPage() {
                   View All
                 </button>
               </div>
-              <div className="saaS-card divide-y divide-border overflow-hidden">
+              <div className="saas-card divide-y divide-border overflow-hidden">
                 {recentDeliveries.slice(0, 5).map((delivery) => (
                   <div key={delivery.id} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/30 transition-colors">
                     <div className={cn(
@@ -649,7 +649,7 @@ export default function ApiKeysPage() {
                 <div className="mt-5 flex justify-end">
                   <button
                     onClick={closeCreate}
-                    className="saaS-btn-primary h-9 text-sm"
+                    className="saas-btn-primary h-9 text-sm"
                   >
                     Done
                   </button>
@@ -673,7 +673,7 @@ export default function ApiKeysPage() {
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
                     placeholder="e.g. CI/CD Pipeline"
-                    className="saaS-input"
+                    className="saas-input"
                     autoFocus
                   />
                 </div>
@@ -681,14 +681,14 @@ export default function ApiKeysPage() {
                   <button
                     type="button"
                     onClick={closeCreate}
-                    className="saaS-btn-secondary h-9 text-sm"
+                    className="saas-btn-secondary h-9 text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending || !newKeyName.trim()}
-                    className="saaS-btn-primary disabled:opacity-50 h-9 text-sm"
+                    className="saas-btn-primary disabled:opacity-50 h-9 text-sm"
                   >
                     <Key size={14} />
                     {createMutation.isPending ? 'Creating...' : 'Create'}
@@ -711,14 +711,14 @@ export default function ApiKeysPage() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="saaS-btn-secondary h-9 text-sm"
+                className="saas-btn-secondary h-9 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteMutation.mutateAsync(deleteConfirm.id)}
                 disabled={deleteMutation.isPending}
-                className="saaS-btn-danger disabled:opacity-50 h-9 text-sm"
+                className="saas-btn-danger disabled:opacity-50 h-9 text-sm"
               >
                 <Trash2 size={14} />
                 {deleteMutation.isPending ? 'Revoking...' : 'Revoke'}
@@ -739,14 +739,14 @@ export default function ApiKeysPage() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setRollTarget(null)}
-                className="saaS-btn-secondary h-9 text-sm"
+                className="saas-btn-secondary h-9 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleRoll(rollTarget)}
                 disabled={rollMutation.isPending}
-                className="saaS-btn-primary disabled:opacity-50 h-9 text-sm"
+                className="saas-btn-primary disabled:opacity-50 h-9 text-sm"
               >
                 <RefreshCw size={14} />
                 {rollMutation.isPending ? 'Rolling...' : 'Roll Key'}
@@ -778,7 +778,7 @@ export default function ApiKeysPage() {
                     value={webhookUrl}
                     onChange={(e) => setWebhookUrl(e.target.value)}
                     placeholder="https://hooks.example.com/events"
-                    className="saaS-input"
+                    className="saas-input"
                     autoFocus
                   />
                   <p className="mt-1 text-[11px] text-muted-foreground">
@@ -806,14 +806,14 @@ export default function ApiKeysPage() {
                 <button
                   type="button"
                   onClick={() => { setShowAddWebhook(false); setWebhookUrl(''); setWebhookEvents(['feedback.created']); }}
-                  className="saaS-btn-secondary h-9 text-sm"
+                  className="saas-btn-secondary h-9 text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingWebhook || !webhookUrl.trim()}
-                  className="saaS-btn-primary disabled:opacity-50 h-9 text-sm"
+                  className="saas-btn-primary disabled:opacity-50 h-9 text-sm"
                 >
                   <Webhook size={14} />
                   {savingWebhook ? 'Creating...' : 'Add Endpoint'}
@@ -835,13 +835,13 @@ export default function ApiKeysPage() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setWebhookDeleteConfirm(null)}
-                className="saaS-btn-secondary h-9 text-sm"
+                className="saas-btn-secondary h-9 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDeleteWebhook(webhookDeleteConfirm.id)}
-                className="saaS-btn-danger disabled:opacity-50 h-9 text-sm"
+                className="saas-btn-danger disabled:opacity-50 h-9 text-sm"
               >
                 <Trash2 size={14} />
                 Delete

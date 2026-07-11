@@ -89,7 +89,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="you@example.com"
               />
             </div>
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="saaS-input"
+                className="saas-input"
                 placeholder="Enter your password"
               />
               <Link
@@ -119,7 +119,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="saaS-btn-primary w-full h-11 text-sm"
+                className="saas-btn-primary w-full h-11 text-sm"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
