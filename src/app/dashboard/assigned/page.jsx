@@ -12,6 +12,14 @@ import { useRouter } from 'next/navigation';
 import { ScreenshotThumbnail } from '@/components/feedback/ScreenshotThumbnail';
 import { FeedbackInlineField, STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/components/feedback/FeedbackInlineField';
 
+function getPathname(url) {
+  try {
+    return url ? new URL(url).pathname : '—';
+  } catch {
+    return '—';
+  }
+}
+
 export default function AssignedPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -68,7 +76,7 @@ export default function AssignedPage() {
       render: (item) => (
         <div>
           <p className="font-medium text-gray-900 dark:text-white">{item.title || item.comment?.slice(0, 60)}</p>
-          <p className="text-xs text-gray-500">{item.Website?.Project?.name || ''} — {item.pageUrl}</p>
+          <p className="text-xs text-gray-500">{item.Website?.Project?.name || ''} — {item.pageUrl || '—'}</p>
         </div>
       ),
     },
@@ -77,7 +85,7 @@ export default function AssignedPage() {
       header: 'Page',
       render: (item) => (
         <span className="text-xs text-gray-500 dark:text-gray-400">
-          {item.pageUrl ? new URL(item.pageUrl).pathname : '—'}
+          {getPathname(item.pageUrl)}
         </span>
       ),
     },

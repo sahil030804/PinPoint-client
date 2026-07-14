@@ -16,7 +16,7 @@ const ICONS = [
   { value: 'feedback', label: 'Feedback 📝' },
 ];
 
-export function WidgetConfigForm({ website, onSave }) {
+function WidgetConfigForm({ website, onSave }) {
   const [color, setColor] = useState('#3B82F6');
   const [position, setPosition] = useState('bottom-right');
   const [buttonText, setButtonText] = useState('Feedback');
@@ -63,7 +63,7 @@ export function WidgetConfigForm({ website, onSave }) {
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="h-10 w-10 cursor-pointer rounded-md border border-gray-300 p-0.5 dark:border-gray-600"
+              className="h-10 w-10 cursor-pointer rounded-[3px] border border-gray-300 p-0.5 dark:border-gray-600"
             />
             <span className="text-sm text-gray-500 dark:text-gray-400">{color}</span>
           </div>
@@ -86,7 +86,7 @@ export function WidgetConfigForm({ website, onSave }) {
             value={buttonText}
             onChange={(e) => setButtonText(e.target.value)}
             maxLength={50}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="mt-1 block w-full rounded-[3px] border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           />
         </div>
 
@@ -120,7 +120,7 @@ export function WidgetConfigForm({ website, onSave }) {
       </div>
 
       {message && (
-        <div className={`rounded-lg p-3 text-sm ${
+        <div className={`rounded-[3px] p-3 text-sm ${
           message.includes('successfully')
             ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
             : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
@@ -132,10 +132,12 @@ export function WidgetConfigForm({ website, onSave }) {
       <button
         type="submit"
         disabled={saving}
-        className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50 active:scale-[0.97] transition-transform"
+        className="rounded-[3px] bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50 active:scale-[0.97] transition-transform"
       >
         {saving ? 'Saving...' : 'Save Widget Settings'}
       </button>
     </form>
   );
 }
+
+export default WidgetConfigForm;

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ScreenshotAnnotations } from './ScreenshotAnnotations';
 
-export function ScreenshotLightbox({ url, annotations, onClose }) {
+function ScreenshotLightbox({ url, annotations, onClose }) {
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -174,7 +174,7 @@ export function ScreenshotLightbox({ url, annotations, onClose }) {
       </div>
 
       {hasPanel && (
-        <div className="absolute right-4 top-4 bottom-24 w-72 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-gray-900/80 shadow-2xl backdrop-blur-md">
+        <div className="absolute right-4 top-4 bottom-24 w-72 flex flex-col overflow-hidden rounded-[3px] border border-white/10 bg-gray-900/80 shadow-2xl backdrop-blur-md">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <h3 className="text-sm font-semibold text-white">Annotations</h3>
             <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-white/70">
@@ -187,7 +187,7 @@ export function ScreenshotLightbox({ url, annotations, onClose }) {
                 key={a.id}
                 data-ann-id={a.id}
                 onClick={() => setSelectedId(selectedId === a.id ? null : a.id)}
-                className={`w-full flex items-start gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all ${
+                className={`w-full flex items-start gap-3 rounded-[3px] px-3 py-2.5 text-left text-sm transition-all ${
                   selectedId === a.id ? 'bg-white/15 ring-1 ring-white/20' : 'hover:bg-white/5'
                 }`}
               >
@@ -233,3 +233,5 @@ export function ScreenshotLightbox({ url, annotations, onClose }) {
     </motion.div>
   );
 }
+
+export default ScreenshotLightbox;

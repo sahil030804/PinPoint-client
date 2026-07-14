@@ -1,20 +1,34 @@
 'use client';
 
 import { useFeedbackTimeline } from '@/hooks/useFeedback';
+import {
+  Bug,
+  UserPlus,
+  UserX,
+  ArrowRightLeft,
+  Zap,
+  MessageSquare,
+  CheckCircle2,
+  RotateCcw,
+  Tags,
+  Link,
+  Camera,
+  Dot,
+} from 'lucide-react';
 
 const ACTION_ICONS = {
-  created: '📍',
-  assigned: '👤',
-  unassigned: "🚫",
-  status_changed: '🔄',
-  priority_changed: '⚡',
-  comment_added: '💬',
-  resolved: '✅',
-  reopened: '🔓',
-  tag_added: '🏷️',
-  tag_removed: '🏷️',
-  duplicate_marked: '🔗',
-  screenshot_updated: '📸',
+  created: Bug,
+  assigned: UserPlus,
+  unassigned: UserX,
+  status_changed: ArrowRightLeft,
+  priority_changed: Zap,
+  comment_added: MessageSquare,
+  resolved: CheckCircle2,
+  reopened: RotateCcw,
+  tag_added: Tags,
+  tag_removed: Tags,
+  duplicate_marked: Link,
+  screenshot_updated: Camera,
 };
 
 function formatRelativeTime(dateString) {
@@ -33,7 +47,7 @@ function formatRelativeTime(dateString) {
 }
 
 function ActivityItem({ activity }) {
-  const icon = ACTION_ICONS[activity.action] || '•';
+  const IconComponent = ACTION_ICONS[activity.action];
 
   function getDescription() {
     switch (activity.action) {
@@ -47,8 +61,10 @@ function ActivityItem({ activity }) {
         return `moved from ${activity.metadata?.from} → ${activity.metadata?.to}`;
       case 'priority_changed':
         return `priority changed from ${activity.metadata?.from} → ${activity.metadata?.to}`;
-      case 'comment_added':
-        return `commented: "${activity.metadata?.preview || ''}..."`;
+      case 'comment_added': {
+        const preview = activity.metadata?.preview || '';
+        return `commented: "${preview}${preview.length >= 50 ? '...' : ''}"`;
+      }
       case 'resolved':
         return 'resolved this issue';
       case 'reopened':
@@ -60,8 +76,8 @@ function ActivityItem({ activity }) {
 
   return (
     <div className="flex gap-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-sm dark:bg-gray-800">
-        {icon}
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800">
+        {IconComponent ? <IconComponent size={16} /> : <Dot size={16} />}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
@@ -83,7 +99,7 @@ export function FeedbackTimeline({ feedbackId }) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
+          <div key={i} className="h-16 animate-pulse rounded-[3px] bg-gray-100 dark:bg-gray-800" />
         ))}
       </div>
     );
