@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/providers/AuthProvider';
 
 const NAV_LINKS = [
   { href: '/features', label: 'Features' },
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 ];
 
 export function PublicNavbar({ active = '', variant = 'sticky' }) {
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -63,14 +65,26 @@ export function PublicNavbar({ active = '', variant = 'sticky' }) {
               {label}
             </Link>
           ))}
-          <Link href="/auth/login" className={linkClass('')}>Login</Link>
-          <Link
-            href="/auth/register"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25"
-          >
-            Get Started Free
-            <ArrowRight size={16} />
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25"
+            >
+              <LayoutDashboard size={16} />
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/auth/login" className={linkClass('')}>Login</Link>
+              <Link
+                href="/auth/register"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25"
+              >
+                Get Started Free
+                <ArrowRight size={16} />
+              </Link>
+            </>
+          )}
         </div>
         <button className="md:hidden p-2 text-gray-600 dark:text-gray-400" onClick={() => setMobileOpen(!mobileOpen)}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -93,8 +107,17 @@ export function PublicNavbar({ active = '', variant = 'sticky' }) {
                 {label}
               </Link>
             ))}
-            <Link href="/auth/login" onClick={() => setMobileOpen(false)} className={mobileLinkClass('')}>Login</Link>
-            <Link href="/auth/register" onClick={() => setMobileOpen(false)} className="block text-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Get Started Free</Link>
+            {user ? (
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block text-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">
+                <LayoutDashboard size={16} className="inline mr-1.5 -mt-0.5" />
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/auth/login" onClick={() => setMobileOpen(false)} className={mobileLinkClass('')}>Login</Link>
+                <Link href="/auth/register" onClick={() => setMobileOpen(false)} className="block text-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Get Started Free</Link>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

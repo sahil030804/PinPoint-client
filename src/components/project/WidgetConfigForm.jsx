@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RadixSelect } from '@/components/common/RadixSelect';
 
 const POSITIONS = [
@@ -24,8 +24,10 @@ function WidgetConfigForm({ website, onSave }) {
   const [darkMode, setDarkMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
     if (website?.widgetConfig) {
       const cfg = website.widgetConfig;
       setColor(cfg.color || '#3B82F6');
@@ -33,6 +35,7 @@ function WidgetConfigForm({ website, onSave }) {
       setButtonText(cfg.buttonText || 'Feedback');
       setIcon(cfg.icon || 'chat');
       setDarkMode(cfg.darkMode || false);
+      initialized.current = true;
     }
   }, [website]);
 

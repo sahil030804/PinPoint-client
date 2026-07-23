@@ -6,6 +6,7 @@ class ApiClient {
     this.token = null;
     this.refreshing = false;
     this.refreshQueue = [];
+    this.timeout = 30000;
   }
 
   setToken(token) {
@@ -45,36 +46,42 @@ class ApiClient {
       options.body = JSON.stringify(body);
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    options.signal = controller.signal;
+
     try {
       const res = await fetch(url, options);
 
       if (res.status === 401 && !isRetry) {
+        clearTimeout(timeoutId);
         if (!this.refreshing) {
           this.refreshing = true;
           try {
             await this.refreshToken();
             this.refreshing = false;
-            this.refreshQueue.forEach((cb) => cb());
+            const queue = this.refreshQueue;
             this.refreshQueue = [];
+            queue.forEach(({ resolve }) => resolve(this.request(method, path, body, true)));
             return this.request(method, path, body, true);
-          } catch {
+          } catch (err) {
             this.refreshing = false;
+            const queue = this.refreshQueue;
             this.refreshQueue = [];
+            queue.forEach(({ reject }) => reject(err));
             localStorage.removeItem('pp_token');
             this.token = null;
             window.location.href = '/auth/login';
             return { success: false, error: { code: 'AUTHENTICATION_ERROR', message: 'Session expired' } };
           }
         } else {
-          return new Promise((resolve) => {
-            this.refreshQueue.push(async () => {
-              const result = await this.request(method, path, body, true);
-              resolve(result);
-            });
+          return new Promise((resolve, reject) => {
+            this.refreshQueue.push({ resolve, reject });
           });
         }
       }
 
+      clearTimeout(timeoutId);
       const data = await res.json();
 
       if (!res.ok) {
@@ -83,6 +90,7 @@ class ApiClient {
 
       return data;
     } catch (err) {
+      clearTimeout(timeoutId);
       return { success: false, error: { code: 'NETWORK_ERROR', message: err.message } };
     }
   }

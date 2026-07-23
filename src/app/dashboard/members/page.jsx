@@ -160,14 +160,22 @@ export default function MembersPage() {
   }
 
   async function handleRoleChange(memberId, newRole) {
-    await updateMember.mutateAsync({ workspaceId: user?.workspaceId, userId: memberId, role: newRole });
-    if (memberId === user?.id) {
-      await refreshWorkspaceRole();
+    try {
+      await updateMember.mutateAsync({ workspaceId: user?.workspaceId, userId: memberId, role: newRole });
+      if (memberId === user?.id) {
+        await refreshWorkspaceRole();
+      }
+    } catch (err) {
+      toastError(err.message || 'Failed to update role');
     }
   }
 
   async function handleRemove(memberId) {
-    await removeMember.mutateAsync({ workspaceId: user?.workspaceId, userId: memberId });
+    try {
+      await removeMember.mutateAsync({ workspaceId: user?.workspaceId, userId: memberId });
+    } catch (err) {
+      toastError(err.message || 'Failed to remove member');
+    }
   }
 
   return (

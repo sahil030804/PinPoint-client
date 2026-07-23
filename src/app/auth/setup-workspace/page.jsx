@@ -7,6 +7,18 @@ import { useToast } from '@/providers/ToastProvider';
 import { api } from '@/lib/api';
 import { ArrowRight, ArrowLeft, Rocket, Plus } from 'lucide-react';
 
+function getSafeRedirect(fallback) {
+  const returnTo = sessionStorage.getItem('pp_return_to');
+  sessionStorage.removeItem('pp_return_to');
+  if (!returnTo || typeof returnTo !== 'string') return fallback;
+  if (returnTo.startsWith('/')) return returnTo;
+  try {
+    const u = new URL(returnTo, window.location.origin);
+    if (u.origin === window.location.origin) return returnTo;
+  } catch {}
+  return fallback;
+}
+
 export default function SetupWorkspacePage() {
   const router = useRouter();
   const { user, workspaces, switchWorkspace, refreshWorkspaces } = useAuth();
@@ -17,9 +29,7 @@ export default function SetupWorkspacePage() {
 
   useEffect(() => {
     if (user?.workspaceId && workspaces.length > 0) {
-      const returnTo = sessionStorage.getItem('pp_return_to');
-      sessionStorage.removeItem('pp_return_to');
-      router.replace(returnTo || '/dashboard');
+      router.replace(getSafeRedirect('/dashboard'));
     }
   }, [user, workspaces, router]);
 
@@ -31,9 +41,7 @@ export default function SetupWorkspacePage() {
       if (res.success) {
         switchWorkspace(res.data.id);
         await refreshWorkspaces();
-        const returnTo = sessionStorage.getItem('pp_return_to');
-        sessionStorage.removeItem('pp_return_to');
-        router.replace(returnTo || '/dashboard');
+        router.replace(getSafeRedirect('/dashboard'));
       } else {
         toastError(res.error?.message || 'Failed to create workspace');
       }
@@ -46,9 +54,7 @@ export default function SetupWorkspacePage() {
 
   function handleSelect(workspaceId) {
     switchWorkspace(workspaceId);
-    const returnTo = sessionStorage.getItem('pp_return_to');
-    sessionStorage.removeItem('pp_return_to');
-    router.replace(returnTo || '/dashboard');
+    router.replace(getSafeRedirect('/dashboard'));
   }
 
   return (

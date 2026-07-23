@@ -86,6 +86,17 @@ export default function DashboardLayout({ children }) {
     }
   }, []);
 
+  function isValidRedirect(url) {
+    if (!url || typeof url !== 'string') return false;
+    if (url.startsWith('/')) return true;
+    try {
+      const u = new URL(url, window.location.origin);
+      return u.origin === window.location.origin;
+    } catch {
+      return false;
+    }
+  }
+
   useEffect(() => {
     if (!loading && user && !activeWorkspaceId) {
       sessionStorage.setItem('pp_return_to', pathname);

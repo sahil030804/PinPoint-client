@@ -13,6 +13,16 @@ import {
   TableCell,
 } from '@/components/ui/table';
 
+function getNestedValue(obj, path) {
+  const keys = path.split('.');
+  let val = obj;
+  for (const key of keys) {
+    if (val == null) return undefined;
+    val = val[key];
+  }
+  return val;
+}
+
 export function DataTable({
   columns,
   data = [],
@@ -36,8 +46,8 @@ export function DataTable({
   const sortedData = useMemo(() => {
     if (!sortKey || !data.length) return data;
     return [...data].sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
+      const aVal = getNestedValue(a, sortKey);
+      const bVal = getNestedValue(b, sortKey);
       if (aVal == null) return 1;
       if (bVal == null) return -1;
       const cmp = typeof aVal === 'string' ? aVal.localeCompare(bVal) : aVal - bVal;
@@ -83,100 +93,102 @@ export function DataTable({
 
   return (
     <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((col) => (
-              <TableHead
-                key={col.key}
-                className={col.sortable ? 'cursor-pointer select-none hover:text-[#172B4D] dark:hover:text-white' : ''}
-                style={col.width ? { width: col.width } : undefined}
-                onClick={() => col.sortable && handleSort(col.key)}
-              >
-                <div className="flex items-center gap-1">
-                  {col.header}
-                  {col.sortable && (
-                    <span className="text-[#6B778C]">
-                      {sortKey === col.key ? (
-                        sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                      ) : (
-                        <ChevronUp size={12} className="opacity-0 group-hover:opacity-50" />
-                      )}
-                    </span>
-                  )}
-                </div>
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedData.map((item, index) => (
-            <TableRow
-              key={item.id || index}
-              className={onRowClick ? 'cursor-pointer' : ''}
-              onClick={() => onRowClick?.(item)}
-            >
+      <div className="rounded-xl border border-border">
+        <Table className="border-0" containerClassName="rounded-none border-0">
+          <TableHeader>
+            <TableRow>
               {columns.map((col) => (
-                <TableCell key={col.key}>
-                  {col.render ? col.render(item) : item[col.key]}
-                </TableCell>
+                <TableHead
+                  key={col.key}
+                  className={col.sortable ? 'cursor-pointer select-none hover:text-[#172B4D] dark:hover:text-white' : ''}
+                  style={col.width ? { width: col.width } : undefined}
+                  onClick={() => col.sortable && handleSort(col.key)}
+                >
+                  <div className="flex items-center gap-1">
+                    {col.header}
+                    {col.sortable && (
+                      <span className="text-[#6B778C]">
+                        {sortKey === col.key ? (
+                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                        ) : (
+                          <ChevronUp size={12} className="opacity-0 group-hover:opacity-50" />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </TableHead>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {sortedData.map((item, index) => (
+              <TableRow
+                key={item.id || index}
+                className={onRowClick ? 'cursor-pointer' : ''}
+                onClick={() => onRowClick?.(item)}
+              >
+                {columns.map((col) => (
+                  <TableCell key={col.key}>
+                    {col.render ? col.render(item) : getNestedValue(item, col.key)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-[#DFE1E6] px-2 py-3 dark:border-[#344563]">
-          <p className="text-xs text-[#5E6C84] dark:text-[#A5ADBA]">
-            Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.page <= 1}
-              onClick={() => onPageChange?.(pagination.page - 1)}
-            >
-              <ChevronLeft size={14} />
-              Previous
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => {
-                let pageNum;
-                if (pagination.totalPages <= 7) {
-                  pageNum = i + 1;
-                } else if (pagination.page <= 4) {
-                  pageNum = i + 1;
-                } else if (pagination.page >= pagination.totalPages - 3) {
-                  pageNum = pagination.totalPages - 6 + i;
-                } else {
-                  pageNum = pagination.page - 3 + i;
-                }
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === pagination.page ? 'default' : 'outline'}
-                    size="xs"
-                    onClick={() => onPageChange?.(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-border px-2 py-3">
+            <p className="text-xs text-[#5E6C84] dark:text-[#A5ADBA]">
+              Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page <= 1}
+                onClick={() => onPageChange?.(pagination.page - 1)}
+              >
+                <ChevronLeft size={14} />
+                Previous
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => {
+                  let pageNum;
+                  if (pagination.totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else if (pagination.page <= 4) {
+                    pageNum = i + 1;
+                  } else if (pagination.page >= pagination.totalPages - 3) {
+                    pageNum = pagination.totalPages - 6 + i;
+                  } else {
+                    pageNum = pagination.page - 3 + i;
+                  }
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === pagination.page ? 'default' : 'outline'}
+                      size="xs"
+                      onClick={() => onPageChange?.(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => onPageChange?.(pagination.page + 1)}
+              >
+                Next
+                <ChevronRight size={14} />
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.page >= pagination.totalPages}
-              onClick={() => onPageChange?.(pagination.page + 1)}
-            >
-              Next
-              <ChevronRight size={14} />
-            </Button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

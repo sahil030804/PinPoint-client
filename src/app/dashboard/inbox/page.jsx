@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/providers/AuthProvider';
 import { useWorkspaceFeedback, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { FeedbackInlineField, STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/components/feedback/FeedbackInlineField';
 import { useToast } from '@/providers/ToastProvider';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import {
   Download,
   Plus,
@@ -40,18 +40,6 @@ function getAvatarUrl(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || '')}&background=2563eb&color=fff&size=28`;
 }
 
-function getRelativeTime(dateString) {
-  const diff = Date.now() - new Date(dateString).getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateString).toLocaleDateString();
-}
-
 function getPathname(url) {
   try {
     if (!url) return '—';
@@ -68,8 +56,16 @@ export default function InboxPage() {
   const router = useRouter();
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
 
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const debounceRef = useRef(null);
   const [filters, setFilters] = useState({ status: 'all', priority: 'all', project: 'all', page: 1 });
+
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchInput]);
 
   const apiFilters = {
     ...filters,
@@ -208,9 +204,9 @@ export default function InboxPage() {
           <input
             type="text"
             placeholder="Search feedback..."
-            value={search}
+            value={searchInput}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setSearchInput(e.target.value);
               setFilters((prev) => ({ ...prev, page: 1 }));
             }}
             className="block w-full border-0 bg-transparent py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
@@ -375,7 +371,7 @@ export default function InboxPage() {
 
                         {/* Created */}
                         <td className="whitespace-nowrap px-6 py-4 text-xs text-muted-foreground">
-                          {getRelativeTime(item.createdAt || item.created_at)}
+                          {formatRelativeTime(item.createdAt || item.created_at)}
                         </td>
 
                         {/* Actions */}

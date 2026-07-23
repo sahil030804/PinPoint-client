@@ -15,7 +15,7 @@ export function useCreateProject() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ workspaceId, ...data }) => api.post(`/projects/workspace/${workspaceId}`, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
+    onSuccess: (_data, variables) => queryClient.invalidateQueries({ queryKey: ['projects', variables.workspaceId] }),
   });
 }
 
@@ -33,7 +33,7 @@ export function useCreateWebsite() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ projectId, ...data }) => api.post(`/websites/project/${projectId}`, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['websites'] }),
+    onSuccess: (_data, variables) => queryClient.invalidateQueries({ queryKey: ['websites', variables.projectId] }),
   });
 }
 

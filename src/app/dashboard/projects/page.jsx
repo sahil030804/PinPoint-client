@@ -12,6 +12,7 @@ import {
   MoreVertical,
   ExternalLink,
   MessageSquare,
+  Globe,
 } from 'lucide-react';
 
 const AVATAR_COLORS = [
@@ -40,12 +41,16 @@ export default function ProjectsPage() {
   async function handleCreate(e) {
     e.preventDefault();
     if (!name.trim()) return;
-    const res = await createProject.mutateAsync({ workspaceId: user?.workspaceId, name, description });
-    if (res.success) {
-      setShowCreate(false);
-      setName('');
-      setDescription('');
-      router.push(`/dashboard/projects/${res.data.id}`);
+    try {
+      const res = await createProject.mutateAsync({ workspaceId: user?.workspaceId, name, description });
+      if (res.success) {
+        setShowCreate(false);
+        setName('');
+        setDescription('');
+        router.push(`/dashboard/projects/${res.data.id}`);
+      }
+    } catch (err) {
+      console.error('Failed to create project:', err);
     }
   }
 
@@ -146,6 +151,7 @@ export default function ProjectsPage() {
               const bgColor = getAvatarColor(project.name, project.color);
               const unresolved = project.unresolvedCount ?? 0;
               const totalFeedback = project.feedbackCount ?? 0;
+              const totalWebsites = project.websiteCount ?? 0;
               const extraMembers = project.memberCount != null ? Math.max(0, project.memberCount - 1) : null;
               const url = project.url || null;
 
@@ -203,9 +209,15 @@ export default function ProjectsPage() {
                     )}
                   </div>
 
-                  <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <MessageSquare size={14} />
-                    <span>{totalFeedback} feedback</span>
+                  <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Globe size={14} />
+                      <span>{totalWebsites} {totalWebsites === 1 ? 'website' : 'websites'}</span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <MessageSquare size={14} />
+                      <span>{totalFeedback} feedback</span>
+                    </span>
                   </div>
                 </div>
               );

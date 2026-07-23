@@ -1,6 +1,7 @@
 'use client';
 
 import { useFeedbackTimeline } from '@/hooks/useFeedback';
+import { formatRelativeTime } from '@/lib/utils';
 import {
   Bug,
   UserPlus,
@@ -30,21 +31,6 @@ const ACTION_ICONS = {
   duplicate_marked: Link,
   screenshot_updated: Camera,
 };
-
-function formatRelativeTime(dateString) {
-  const now = Date.now();
-  const date = new Date(dateString).getTime();
-  const diff = now - date;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateString).toLocaleDateString();
-}
 
 function ActivityItem({ activity }) {
   const IconComponent = ACTION_ICONS[activity.action];
@@ -93,7 +79,18 @@ function ActivityItem({ activity }) {
 }
 
 export function FeedbackTimeline({ feedbackId }) {
-  const { data: activities = [], isLoading } = useFeedbackTimeline(feedbackId);
+  const { data: activities = [], isLoading, isError, refetch } = useFeedbackTimeline(feedbackId);
+
+  if (isError) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-sm text-red-500 mb-2">Failed to load activity timeline</p>
+        <button onClick={() => refetch()} className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

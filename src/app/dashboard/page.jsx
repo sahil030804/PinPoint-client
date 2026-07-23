@@ -3,8 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
-import { useWorkspaceStats } from "@/hooks/useFeedback";
-import { useFeedbackTrends, useActivityFeed } from "@/hooks/useWorkspace";
+import { useWorkspaceStats, useFeedbackTrends, useActivityFeed } from "@/hooks/useWorkspace";
 import {
   MessageSquare,
   AlertCircle,

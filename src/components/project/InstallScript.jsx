@@ -5,6 +5,10 @@ import { useState } from 'react';
 const WIDGET_URL = process.env.NEXT_PUBLIC_WIDGET_URL || '/widget.js';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 
+function escapeJs(str) {
+  return String(str).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+}
+
 function InstallScript({ projectId, widgetConfig = {} }) {
   const [copied, setCopied] = useState(false);
 
@@ -17,16 +21,16 @@ function InstallScript({ projectId, widgetConfig = {} }) {
   };
 
   const snippet = `<script>
-window.PINPOINT_API_URL = "${API_URL}";
+window.PINPOINT_API_URL = "${escapeJs(API_URL)}";
 </script>
-<script src="${WIDGET_URL}"></script>
+<script src="${escapeJs(WIDGET_URL)}"></script>
 <script>
   Feedback.init({
-    projectId: "${projectId}",
-    color: "${config.color}",
-    position: "${config.position}",
-    buttonText: "${config.buttonText}",
-    icon: "${config.icon}"
+    projectId: "${escapeJs(projectId)}",
+    color: "${escapeJs(config.color)}",
+    position: "${escapeJs(config.position)}",
+    buttonText: "${escapeJs(config.buttonText)}",
+    icon: "${escapeJs(config.icon)}"
   });
 </script>`;
 

@@ -153,7 +153,13 @@ export default function FeedbackDetailPage() {
       <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/dashboard/projects');
+              }
+            }}
             className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           >
             <ArrowLeft size={16} />

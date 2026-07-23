@@ -65,19 +65,27 @@ export function useUpdateFeedback() {
         }));
       }
 
-      return { previous, previousWebsiteLists, previousWorkspaceLists };
+      return { previous, previousWebsiteLists, previousWorkspaceLists, snapshotTime: Date.now() };
     },
     onError: (err, variables, context) => {
-      if (context?.previous) {
+      const current = queryClient.getQueryData(['feedback', variables.id]);
+      const currentWebsiteLists = queryClient.getQueriesData({ queryKey: ['feedback', 'website'] });
+      const currentWorkspaceLists = queryClient.getQueriesData({ queryKey: ['feedback', 'workspace'] });
+
+      if (context?.previous && !shallowEqual(context.previous, current)) {
         queryClient.setQueryData(['feedback', variables.id], context.previous);
       }
       if (context?.previousWebsiteLists) {
         for (const [listKey, listData] of context.previousWebsiteLists) {
+          const currentList = currentWebsiteLists.find(([k]) => k === listKey)?.[1];
+          if (currentList && !shallowEqual(listData, currentList)) continue;
           queryClient.setQueryData(listKey, listData);
         }
       }
       if (context?.previousWorkspaceLists) {
         for (const [listKey, listData] of context.previousWorkspaceLists) {
+          const currentList = currentWorkspaceLists.find(([k]) => k === listKey)?.[1];
+          if (currentList && !shallowEqual(listData, currentList)) continue;
           queryClient.setQueryData(listKey, listData);
         }
       }
@@ -89,6 +97,18 @@ export function useUpdateFeedback() {
       queryClient.invalidateQueries({ queryKey: ['timeline', variables.id] });
     },
   });
+}
+
+function shallowEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const ka = Object.keys(a);
+  const kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  for (const key of ka) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
 }
 
 export function useFeedbackTimeline(feedbackId) {
@@ -122,7 +142,7 @@ export function useAddComment() {
   });
 }
 
-export function useWorkspaceStats(workspaceId) {
+export function useWorkspaceAnalytics(workspaceId) {
   return useQuery({
     queryKey: ['analytics', 'overview', workspaceId],
     queryFn: () => api.get(`/analytics/overview/${workspaceId}`),

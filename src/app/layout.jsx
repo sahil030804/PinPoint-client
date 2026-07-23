@@ -55,19 +55,6 @@ export default function RootLayout({ children }) {
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
-        <script dangerouslySetInnerHTML={{ __html: `
-window.PINPOINT_API_URL = "http://localhost:4000/v1";
-` }} />
-        <script src="/widget.js" />
-        <script dangerouslySetInnerHTML={{ __html: `
-Feedback.init({
-  projectId: "eadb9cdc-2f3c-4057-892f-50befdb085b8",
-  color: "#3B82F6",
-  position: "bottom-right",
-  buttonText: "Help",
-  icon: "chat"
-});
-` }} />
       </body>
     </html>
   );
