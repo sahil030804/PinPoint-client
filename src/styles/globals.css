@@ -332,6 +332,54 @@
   scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
 }
 
+/* ── Responsive Card Table ── */
+@media (max-width: 1023px) {
+  .responsive-card-table thead {
+    display: none;
+  }
+  .responsive-card-table,
+  .responsive-card-table tbody,
+  .responsive-card-table tr,
+  .responsive-card-table td {
+    display: block;
+  }
+  .responsive-card-table > div {
+    overflow: visible !important;
+  }
+  .responsive-card-table table {
+    overflow: visible;
+  }
+  .responsive-card-table tr {
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    background: hsl(var(--card));
+    padding: 0.5rem;
+  }
+  .responsive-card-table td {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem !important;
+    border: none !important;
+    white-space: normal !important;
+    min-height: 2rem;
+  }
+  .responsive-card-table td::before {
+    content: attr(data-label);
+    width: 35%;
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .responsive-card-table td[data-no-label]::before {
+    display: none;
+  }
+}
+
 @keyframes authFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

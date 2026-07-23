@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { useWorkspaceMembers, useInviteMember, useUpdateMember, useRemoveMember } from '@/hooks/useWorkspace';
@@ -8,10 +8,22 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { SettingsTabs } from '@/components/common/SettingsTabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { cn } from '@/lib/utils';
-import { Plus, Users, X, Mail, User } from 'lucide-react';
-import { RadixSelect } from '@/components/common/RadixSelect';
+import { Plus, Users, X, Mail, User, MoreVertical, Shield, ShieldCheck, Code, Eye } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
-const ROLE_OPTIONS = ['admin', 'developer', 'viewer', 'client'];
+const ROLE_ICONS = {
+  owner: Shield,
+  admin: ShieldCheck,
+  developer: Code,
+  viewer: Eye,
+  client: User,
+};
 
 const ROLE_COLORS = {
   owner: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
@@ -20,6 +32,35 @@ const ROLE_COLORS = {
   viewer: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   client: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
+
+const ROLE_OPTIONS = ['admin', 'developer', 'viewer', 'client'];
+
+function RoleBadge({ role }) {
+  const config = ROLE_COLORS[role] || ROLE_COLORS.viewer;
+  const Icon = ROLE_ICONS[role] || User;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${config}`}>
+      <Icon size={12} />
+      {role}
+    </span>
+  );
+}
+
+function StatusPill({ status }) {
+  const isActive = status === 'active' || !status;
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+      isActive
+        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+    }`}>
+      <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
+        isActive ? 'bg-emerald-500' : 'bg-gray-400'
+      }`} />
+      {isActive ? 'Active' : 'Offline'}
+    </span>
+  );
+}
 
 export default function MembersPage() {
   const { user } = useAuth();
@@ -32,6 +73,12 @@ export default function MembersPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('developer');
+  const canManageMembers = ['owner', 'admin'].includes(user?.workspaceRole || '');
+
+  const filteredMembers = useMemo(() => {
+    let result = members;
+    return result;
+  }, [members]);
 
   async function handleInvite(e) {
     e.preventDefault();
@@ -110,7 +157,7 @@ export default function MembersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {members.map((member) => {
+                  {filteredMembers.map((member) => {
                     const role = member.role || 'viewer';
                     return (
                       <tr key={member.userId} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
@@ -130,22 +177,30 @@ export default function MembersPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3.5">
-                          <RadixSelect
-                            value={role}
-                            onChange={(v) => handleRoleChange(member.userId, v)}
-                            disabled={member.userId === user?.id}
-                            options={ROLE_OPTIONS.map((r) => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }))}
-                            placeholder="Role"
-                          />
+                          <RoleBadge role={role} />
                         </td>
                         <td className="px-4 py-3.5 text-right">
-                          {member.userId !== user?.id && (
-                            <button
-                              onClick={() => handleRemove(member)}
-                              className="text-xs text-destructive hover:text-destructive/80 font-medium active:scale-95 transition-all"
-                            >
-                              Remove
-                            </button>
+                          {canManageMembers && member.role !== 'owner' && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none" aria-label="Member actions" type="button">
+                                  <MoreVertical size={16} />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="min-w-[200px] p-2">
+                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>
+                                {['admin', 'developer', 'viewer', 'client'].map((r) => (
+                                  <DropdownMenuItem key={r} onClick={() => handleRoleChange(member.User?.id, r)} className={member.role === r ? 'bg-primary/10' : ''}>
+                                    <span className={`h-2 w-2 rounded-full shrink-0 ${member.role === r ? 'bg-primary' : 'bg-transparent'}`} />
+                                    <span className={member.role === r ? '' : 'ml-[10px]'}>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
+                                  </DropdownMenuItem>
+                                ))}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem variant="destructive" onClick={() => handleRemove(member)}>
+                                  Remove member
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                         </td>
                       </tr>
@@ -185,13 +240,17 @@ export default function MembersPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">Role</label>
-                <RadixSelect
+                <select
                   value={inviteRole}
-                  onChange={setInviteRole}
-                  options={ROLE_OPTIONS.map((r) => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }))}
-                  placeholder="Select role"
-                  triggerClassName="w-full"
-                />
+                  onChange={(e) => setInviteRole(e.target.value)}
+                  className="saas-input"
+                >
+                  {ROLE_OPTIONS.map((r) => (
+                    <option key={r} value={r}>
+                      {r.charAt(0).toUpperCase() + r.slice(1)}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button

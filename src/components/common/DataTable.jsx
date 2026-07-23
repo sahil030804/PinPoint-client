@@ -12,6 +12,7 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 function getNestedValue(obj, path) {
   const keys = path.split('.');
@@ -32,6 +33,8 @@ export function DataTable({
   onSort,
   onRowClick,
   emptyState,
+  density = 'comfortable',
+  responsiveCards = false,
 }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState('asc');
@@ -57,13 +60,18 @@ export function DataTable({
 
   if (loading) {
     return (
-      <div className="animate-pulse">
-        <Table>
+      <div className={cn('animate-pulse', responsiveCards ? '' : '')}>
+        <Table
+          containerClassName={cn(
+            'rounded-xl border border-border',
+            responsiveCards ? 'lg:overflow-x-auto overflow-visible' : 'overflow-x-auto'
+          )}
+        >
           <TableHeader>
             <TableRow>
               {columns.map((col) => (
-                <TableHead key={col.key}>
-                  <div className="h-3 w-16 rounded-sm bg-[#DFE1E6] dark:bg-[#344563]" />
+                <TableHead key={col.key} className={density === 'compact' ? 'h-8 px-3 py-1.5' : ''}>
+                  <div className="h-3 w-16 rounded-sm bg-muted" />
                 </TableHead>
               ))}
             </TableRow>
@@ -72,9 +80,12 @@ export function DataTable({
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
                 {columns.map((col) => (
-                  <TableCell key={col.key}>
+                  <TableCell
+                    key={col.key}
+                    className={density === 'compact' ? 'px-3 py-2' : ''}
+                  >
                     <div
-                      className="h-4 rounded-sm bg-[#EBECF0] dark:bg-[#253858]"
+                      className="h-4 rounded-sm bg-muted"
                       style={{ width: `${70 + ((col.key.length + i) % 3) * 10}%` }}
                     />
                   </TableCell>
@@ -91,23 +102,35 @@ export function DataTable({
     return emptyState || <EmptyState title="No data" description="No items match your criteria." />;
   }
 
+  const cellClass = density === 'compact' ? 'px-3 py-2' : 'px-4 py-3';
+  const headClass = density === 'compact' ? 'h-8 px-3 py-1.5' : '';
+
   return (
     <div>
-      <div className="rounded-xl border border-border">
-        <Table className="border-0" containerClassName="rounded-none border-0">
+      <div className={cn('rounded-xl border border-border', responsiveCards ? '' : '')}>
+        <Table
+          className={responsiveCards ? 'responsive-card-table' : ''}
+          containerClassName={cn(
+            'rounded-none border-0',
+            responsiveCards ? '' : ''
+          )}
+        >
           <TableHeader>
             <TableRow>
               {columns.map((col) => (
                 <TableHead
                   key={col.key}
-                  className={col.sortable ? 'cursor-pointer select-none hover:text-[#172B4D] dark:hover:text-white' : ''}
+                  className={cn(
+                    headClass,
+                    col.sortable ? 'cursor-pointer select-none hover:text-foreground' : ''
+                  )}
                   style={col.width ? { width: col.width } : undefined}
                   onClick={() => col.sortable && handleSort(col.key)}
                 >
                   <div className="flex items-center gap-1">
                     {col.header}
                     {col.sortable && (
-                      <span className="text-[#6B778C]">
+                      <span className="text-muted-foreground">
                         {sortKey === col.key ? (
                           sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                         ) : (
@@ -124,11 +147,15 @@ export function DataTable({
             {sortedData.map((item, index) => (
               <TableRow
                 key={item.id || index}
-                className={onRowClick ? 'cursor-pointer' : ''}
+                className={cn(onRowClick ? 'cursor-pointer' : '', density === 'compact' ? '' : '')}
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map((col) => (
-                  <TableCell key={col.key}>
+                  <TableCell
+                    key={col.key}
+                    className={cellClass}
+                    data-label={responsiveCards ? col.header : undefined}
+                  >
                     {col.render ? col.render(item) : getNestedValue(item, col.key)}
                   </TableCell>
                 ))}
@@ -139,7 +166,7 @@ export function DataTable({
 
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-2 py-3">
-            <p className="text-xs text-[#5E6C84] dark:text-[#A5ADBA]">
+            <p className="text-xs text-muted-foreground">
               Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
             </p>
             <div className="flex items-center gap-2">
