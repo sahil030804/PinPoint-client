@@ -21,6 +21,9 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
   const [panOrigin, setPanOrigin] = useState({ x: 0, y: 0 });
   const [naturalSize, setNaturalSize] = useState(null);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const [selectedId, setSelectedId] = useState(null);
+  const [editorId, setEditorId] = useState(null);
+  const [labelDraft, setLabelDraft] = useState('');
   const containerRef = useRef(null);
   const imgRef = useRef(null);
   const imageWrapRef = useRef(null);
@@ -30,14 +33,49 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     function handleKeyDown(e) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        // Close the note editor first, the annotator itself only when no editor is open.
+        if (editorId) {
+          setEditorId(null);
+          setSelectedId(null);
+        } else {
+          onClose();
+        }
+      }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, editorId]);
+
+  // Persist the open editor's text into its annotation (used when switching
+  // to another box or starting a new drawing, so typed text is never lost).
+  function commitDraft() {
+    if (!editorId) return;
+    const text = labelDraft.trim();
+    setAnnotations((prev) => prev.map((a) => (a.id === editorId ? { ...a, label: text } : a)));
+  }
+
+  function openEditor(id) {
+    commitDraft();
+    const ann = annotations.find((a) => a.id === id);
+    setSelectedId(id);
+    setLabelDraft(ann?.label || '');
+    setEditorId(id);
+  }
+
+  function saveLabel() {
+    commitDraft();
+    setEditorId(null);
+  }
+
+  function deleteAnnotation(id) {
+    setAnnotations((prev) => prev.filter((a) => a.id !== id));
+    if (editorId === id) setEditorId(null);
+    setSelectedId((prev) => (prev === id ? null : prev));
+  }
 
   useEffect(() => {
     if (containerRef.current) {
@@ -102,14 +140,20 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
     const frac = getFraction(e.clientX, e.clientY);
     if (!frac) return;
 
+    // Clicking an existing box selects it and opens the note editor
+    // (deletion is an explicit action inside the editor).
     const clicked = annotations.find((a) =>
       frac.x >= a.x && frac.x <= a.x + a.width &&
       frac.y >= a.y && frac.y <= a.y + a.height,
     );
     if (clicked) {
-      setAnnotations((prev) => prev.filter((a) => a.id !== clicked.id));
+      openEditor(clicked.id);
       return;
     }
+
+    // Starting a fresh drawing commits any open note first.
+    commitDraft();
+    setEditorId(null);
 
     const newDrawing = { startX: frac.x, startY: frac.y, currentX: frac.x, currentY: frac.y };
     drawingRef.current = newDrawing;
@@ -143,10 +187,15 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
     const w = Math.abs(d.currentX - d.startX);
     const h = Math.abs(d.currentY - d.startY);
     if (w > 0.005 && h > 0.005) {
+      const id = generateId();
       setAnnotations((prev) => [
         ...prev,
-        { id: generateId(), x, y, width: w, height: h, color: selectedColor, label: '' },
+        { id, x, y, width: w, height: h, color: selectedColor, label: '' },
       ]);
+      // Open the note editor straight away so the new box gets its text.
+      setSelectedId(id);
+      setLabelDraft('');
+      setEditorId(id);
     }
     drawingRef.current = null;
     setDrawing(null);
@@ -179,7 +228,10 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
       onWheel={handleWheel}
     >
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent px-6 py-4">
-        <h2 className="text-lg font-semibold text-white">Annotate Screenshot</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-white">Annotate Screenshot</h2>
+          <p className="mt-0.5 text-xs text-white/60">Draw a box to add a note · Click a box to edit its note</p>
+        </div>
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
@@ -232,7 +284,78 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
             annotations={annotations}
             width={displayW || 0}
             height={displayH || 0}
+            selectedId={selectedId}
+            onSelect={(id) => { if (id) openEditor(id); }}
           />
+          {(() => {
+            const editorAnn = editorId ? annotations.find((a) => a.id === editorId) : null;
+            if (!editorAnn || !displayW || !displayH) return null;
+            const ED_W = 248;
+            const bx = editorAnn.x * displayW;
+            const by = editorAnn.y * displayH;
+            const bh = Math.max(2, editorAnn.height * displayH);
+            const edX = Math.min(Math.max(bx, 8), Math.max(8, displayW - ED_W - 8));
+            const below = by + bh + 8;
+            const edY = below + 160 <= displayH ? below : Math.max(8, by - 168);
+            const num = annotations.findIndex((a) => a.id === editorId) + 1;
+            return (
+              <div
+                className="absolute z-10"
+                style={{ left: edX, top: edY, width: ED_W, maxWidth: 'calc(100% - 16px)' }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <form
+                  onSubmit={(e) => { e.preventDefault(); saveLabel(); }}
+                  className="rounded-xl border border-white/10 bg-gray-900/95 p-3 shadow-2xl backdrop-blur"
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <span
+                      className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                      style={{ backgroundColor: editorAnn.color }}
+                    >
+                      {num}
+                    </span>
+                    <span className="text-xs font-semibold text-white">
+                      {editorAnn.label ? 'Edit note' : 'Add a note'}
+                    </span>
+                  </div>
+                  <input
+                    key={editorId}
+                    autoFocus
+                    value={labelDraft}
+                    onChange={(e) => setLabelDraft(e.target.value)}
+                    placeholder="Describe the issue…"
+                    maxLength={280}
+                    className="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/40"
+                  />
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <button
+                      type="submit"
+                      className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 active:scale-95"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteAnnotation(editorId)}
+                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-white/10 active:scale-95"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEditorId(null); setSelectedId(null); }}
+                      className="ml-auto rounded-lg px-3 py-1.5 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white active:scale-95"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            );
+          })()}
           {drawingRect && (
             <svg
               width={displayW || 0}
