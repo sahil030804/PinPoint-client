@@ -42,7 +42,7 @@ const PRIORITIES = ['critical', 'high', 'medium', 'low'];
 function ScreenshotViewer({ screenshot, annotations }) {
   const [open, setOpen] = useState(false);
   if (!screenshot) return null;
-  const url = typeof screenshot === 'string' ? screenshot : (screenshot.clientUrl || screenshot.serverUrl);
+  const url = typeof screenshot === 'string' ? screenshot : (screenshot.serverUrl || screenshot.clientUrl);
   if (!url) return null;
 
   return (
@@ -563,7 +563,7 @@ export default function FeedbackDetailPage() {
       <AnimatePresence>
         {annotatorOpen && (
           <ScreenshotAnnotator
-            url={typeof feedback.screenshot === 'string' ? feedback.screenshot : (feedback.screenshot.clientUrl || feedback.screenshot.serverUrl)}
+            url={typeof feedback.screenshot === 'string' ? feedback.screenshot : (feedback.screenshot.serverUrl || feedback.screenshot.clientUrl)}
             initialAnnotations={feedback.annotations || []}
             onSave={handleSaveAnnotations}
             onClose={() => setAnnotatorOpen(false)}

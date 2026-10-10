@@ -9,7 +9,7 @@ export function ScreenshotThumbnail({ screenshot, annotations, size = 'md' }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const url = typeof screenshot === 'string' ? screenshot : (screenshot?.clientUrl || screenshot?.serverUrl);
+  const url = typeof screenshot === 'string' ? screenshot : (screenshot?.serverUrl || screenshot?.clientUrl);
   if (!url) return null;
 
   const sizeMap = { sm: { w: 80, h: 56 }, md: { w: 120, h: 80 } };
