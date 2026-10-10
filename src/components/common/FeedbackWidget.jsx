@@ -4,8 +4,10 @@ import { useEffect } from 'react';
 
 import { WIDGET_VERSION, widgetUrl } from '@/lib/widget';
 
-const PROJECT_ID =
-  process.env.NEXT_PUBLIC_WIDGET_PROJECT_ID || '07916aa1-88ef-44f5-afd7-0703dceb0926';
+// Only dogfood our own widget when a real project has been configured.
+// When NEXT_PUBLIC_WIDGET_PROJECT_ID is unset we render nothing, so the app
+// never ships a Feedback button that points at a non-existent project.
+const PROJECT_ID = process.env.NEXT_PUBLIC_WIDGET_PROJECT_ID;
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 const COLOR = process.env.NEXT_PUBLIC_WIDGET_COLOR || '#3E5A75';
 const POSITION = process.env.NEXT_PUBLIC_WIDGET_POSITION || 'bottom-right';
