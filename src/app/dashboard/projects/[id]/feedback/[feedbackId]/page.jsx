@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { ScreenshotAnnotations } from '@/components/feedback/ScreenshotAnnotations';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
@@ -41,33 +42,67 @@ const PRIORITIES = ['critical', 'high', 'medium', 'low'];
 
 function ScreenshotViewer({ screenshot, annotations }) {
   const [open, setOpen] = useState(false);
-  if (!screenshot) return null;
-  const url = typeof screenshot === 'string' ? screenshot : (screenshot.serverUrl || screenshot.clientUrl);
+  // Pixel rect of the actually-displayed picture inside the container.
+  // The <img> uses object-contain, so the element box and the picture differ
+  // whenever aspects don't match (browser letterboxes); positioning markers
+  // against the element box puts them in the blank bands. Measure the picture
+  // rect and overlay the same renderer the lightbox uses, so preview and
+  // lightbox agree by construction.
+  const [layer, setLayer] = useState(null);
+  const containerRef = useRef(null);
+  const imgRef = useRef(null);
+  const url = typeof screenshot === 'string' ? screenshot : (screenshot?.serverUrl || screenshot?.clientUrl);
+
+  const measure = useCallback(() => {
+    const img = imgRef.current;
+    const cont = containerRef.current;
+    if (!img || !cont || !img.naturalWidth || !img.naturalHeight) return;
+    const contRect = cont.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+    if (!imgRect.width || !imgRect.height) return;
+    const scale = Math.min(imgRect.width / img.naturalWidth, imgRect.height / img.naturalHeight);
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    const x = (imgRect.left - contRect.left) + (imgRect.width - w) / 2;
+    const y = (imgRect.top - contRect.top) + (imgRect.height - h) / 2;
+    setLayer((prev) =>
+      prev &&
+      Math.abs(prev.x - x) < 0.5 && Math.abs(prev.y - y) < 0.5 &&
+      Math.abs(prev.w - w) < 0.5 && Math.abs(prev.h - h) < 0.5
+        ? prev
+        : { x, y, w, h },
+    );
+  }, []);
+
+  useEffect(() => {
+    setLayer(null);
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [url, annotations?.length, measure]);
+
   if (!url) return null;
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
+      <div ref={containerRef} className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
         <img
+          ref={imgRef}
           src={url}
           alt="Feedback screenshot"
           className="w-full object-contain max-h-96 cursor-pointer"
           onClick={() => setOpen(true)}
+          onLoad={measure}
         />
-        {annotations?.length > 0 && (
-          <div className="absolute inset-0 pointer-events-none">
-            {annotations.map((ann, i) => (
-              <div
-                key={ann.id || i}
-                className="absolute pointer-events-auto cursor-pointer"
-                style={{ left: `${ann.x * 100}%`, top: `${ann.y * 100}%`, transform: 'translate(-50%, -50%)' }}
-                onClick={() => setOpen(true)}
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-lg ring-2 ring-white dark:ring-gray-900">
-                  {ann.number || i + 1}
-                </span>
-              </div>
-            ))}
+        {annotations?.length > 0 && layer && (
+          <div
+            className="absolute cursor-pointer"
+            style={{ left: layer.x, top: layer.y, width: layer.w, height: layer.h }}
+            onClick={() => setOpen(true)}
+          >
+            <div className="pointer-events-none absolute inset-0">
+              <ScreenshotAnnotations annotations={annotations} width={layer.w} height={layer.h} />
+            </div>
           </div>
         )}
       </div>
