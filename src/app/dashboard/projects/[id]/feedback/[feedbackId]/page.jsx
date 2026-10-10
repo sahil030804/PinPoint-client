@@ -191,8 +191,17 @@ export default function FeedbackDetailPage() {
   }
 
   const reporterName = feedback.reporter?.name || feedback.reporterName || 'Anonymous';
-  const osBrowser = [feedback.metadata?.os, feedback.metadata?.browser].filter(Boolean).join(' • ');
-  const viewport = feedback.metadata?.viewport || '';
+  const osBrowser = [feedback.metadata?.os, feedback.metadata?.browser]
+    .filter((v) => typeof v === 'string' && v)
+    .join(' • ');
+  // The widget sends `viewport` as a string ("1440x900"), but tolerate legacy/object
+  // payloads — rendering an object as a React child throws and blanks the page.
+  const rawViewport = feedback.metadata?.viewport;
+  const viewport = typeof rawViewport === 'string'
+    ? rawViewport
+    : rawViewport && typeof rawViewport === 'object'
+      ? [rawViewport.width, rawViewport.height].filter(Boolean).join('x')
+      : '';
 
   return (
     <div>

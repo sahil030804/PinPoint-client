@@ -22,7 +22,7 @@ export default function ProjectDetailPage() {
   const { user } = useAuth();
   const { error: toastError } = useToast();
   const queryClient = useQueryClient();
-  const { data: projects = [] } = useProjects(user?.workspaceId);
+  const { data: projects = [], isLoading: projectsLoading } = useProjects(user?.workspaceId);
   const project = projects.find((p) => p.id === params.id);
   const { data: websites = [], isLoading: websitesLoading } = useWebsites(params.id);
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
@@ -70,6 +70,15 @@ export default function ProjectDetailPage() {
     } catch (err) {
       toastError(err.message || 'Failed to save widget settings');
     }
+  }
+
+  if (projectsLoading) {
+    return (
+      <div className="p-6">
+        <div className="h-7 w-56 animate-pulse rounded bg-muted" />
+        <div className="mt-4 h-40 animate-pulse rounded-xl border border-border bg-card" />
+      </div>
+    );
   }
 
   if (!project) {
