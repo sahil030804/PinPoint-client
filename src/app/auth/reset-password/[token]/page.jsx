@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { api } from '@/lib/api';
 import { ArrowLeft, Lock, Check } from 'lucide-react';
@@ -15,6 +16,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const params = useParams();
+  const { establishSession } = useAuth();
   const { success: toastSuccess } = useToast();
 
   async function handleSubmit(e) {
@@ -35,6 +37,9 @@ export default function ResetPasswordPage() {
     try {
       const res = await api.post(`/auth/reset-password/${params.token}`, { password, token: params.token });
       if (res.success) {
+        // Server rotates to a fresh JWT on reset — persist it like login does,
+        // otherwise /dashboard loads unauthenticated and bounces to login.
+        await establishSession(res.data?.token, res.data?.user);
         toastSuccess('Password reset successfully. You are now signed in.');
         setDone(true);
         setTimeout(() => router.push('/dashboard'), 1500);
@@ -55,7 +60,7 @@ export default function ResetPasswordPage() {
           <Link href="/" className="mb-10 block">
             <span className="text-2xl font-bold text-foreground tracking-tight">PinPoint</span>
           </Link>
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/30">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E2ECE6] dark:bg-emerald-900/30">
             <Check size={28} className="text-emerald-600 dark:text-emerald-400" />
           </div>
           <h1 className="text-xl font-bold text-foreground">Password reset successful</h1>
@@ -68,10 +73,10 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left side — Brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-blue-700 items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-[#2C4257] items-center justify-center">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzEuNjYgMCAzLTEuMzQgMy0zcy0xLjM0LTMtMy0zLTMgMS4zNC0zIDMgMS4zNCAzIDMgM3oiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
         <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-md px-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 mb-8 auth-fade-in">

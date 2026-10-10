@@ -223,7 +223,7 @@ function ScreenshotLightbox({ url, annotations, onClose }) {
                 key={a.id}
                 data-ann-id={a.id}
                 onClick={() => setSelectedId(selectedId === a.id ? null : a.id)}
-                className={`w-full flex items-start gap-3 rounded-[3px] px-3 py-2.5 text-left text-sm transition-all ${
+                className={`w-full flex items-start gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all ${
                   selectedId === a.id ? 'bg-white/15 ring-1 ring-white/20' : 'hover:bg-white/5'
                 }`}
               >

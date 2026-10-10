@@ -7,7 +7,7 @@ import { WIDGET_VERSION, widgetUrl } from '@/lib/widget';
 const PROJECT_ID =
   process.env.NEXT_PUBLIC_WIDGET_PROJECT_ID || '07916aa1-88ef-44f5-afd7-0703dceb0926';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
-const COLOR = process.env.NEXT_PUBLIC_WIDGET_COLOR || '#3B82F6';
+const COLOR = process.env.NEXT_PUBLIC_WIDGET_COLOR || '#3E5A75';
 const POSITION = process.env.NEXT_PUBLIC_WIDGET_POSITION || 'bottom-right';
 const BUTTON_TEXT = process.env.NEXT_PUBLIC_WIDGET_BUTTON_TEXT || 'Feedback';
 const ICON = process.env.NEXT_PUBLIC_WIDGET_ICON || 'chat';

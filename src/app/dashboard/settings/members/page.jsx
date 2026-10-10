@@ -26,11 +26,11 @@ const ROLE_ICONS = {
 };
 
 const ROLE_COLORS = {
-  owner: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  admin: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  developer: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  owner: 'bg-muted text-muted-foreground',
+  admin: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+  developer: 'bg-[#E2ECE6] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   viewer: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  client: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  client: 'bg-[#F0EBDC] text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
 const ROLE_OPTIONS = ['admin', 'developer', 'viewer', 'client'];
@@ -51,11 +51,11 @@ function StatusPill({ status }) {
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
       isActive
-        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+        ? 'bg-[#E2ECE6] text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
         : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
     }`}>
       <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
-        isActive ? 'bg-emerald-500' : 'bg-gray-400'
+        isActive ? 'bg-[#6E9A82]' : 'bg-gray-400'
       }`} />
       {isActive ? 'Active' : 'Offline'}
     </span>

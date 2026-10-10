@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component {
       const canRetry = this.state.retryCount < this.maxRetries;
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 text-red-500">
+          <div className="mb-4 text-[#9C6464] dark:text-[#C48F8F]">
             <AlertTriangle size={40} />
           </div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Something went wrong</h3>
@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component {
           {canRetry ? (
             <button
               onClick={this.handleRetry}
-              className="mt-6 rounded-[3px] bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
+              className="mt-6 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
             >
               Try again
             </button>

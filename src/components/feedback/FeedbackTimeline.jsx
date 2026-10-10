@@ -84,8 +84,8 @@ export function FeedbackTimeline({ feedbackId }) {
   if (isError) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-red-500 mb-2">Failed to load activity timeline</p>
-        <button onClick={() => refetch()} className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+        <p className="text-sm text-[#9C6464] dark:text-[#C48F8F] mb-2">Failed to load activity timeline</p>
+        <button onClick={() => refetch()} className="text-sm text-primary hover:underline dark:text-primary">
           Try again
         </button>
       </div>
@@ -96,7 +96,7 @@ export function FeedbackTimeline({ feedbackId }) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-[3px] bg-gray-100 dark:bg-gray-800" />
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
         ))}
       </div>
     );

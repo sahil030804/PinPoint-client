@@ -166,7 +166,7 @@ export function FeedbackInlineField({ feedbackId, field, value, options, renderD
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label || `Change ${field}`}
-        className="cursor-pointer rounded transition-colors hover:ring-2 hover:ring-blue-400/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70"
+        className="cursor-pointer rounded transition-colors hover:ring-2 hover:ring-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
       >
         {renderDisplay(value)}
       </button>
@@ -176,7 +176,7 @@ export function FeedbackInlineField({ feedbackId, field, value, options, renderD
           role="menu"
           aria-label={label || field}
           onKeyDown={handleMenuKeyDown}
-          className="z-[100] overflow-y-auto rounded-[3px] border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+          className="z-[100] overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-700 dark:bg-gray-800"
           style={{
             position: 'fixed',
             top: pos.top,
@@ -196,7 +196,7 @@ export function FeedbackInlineField({ feedbackId, field, value, options, renderD
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => { e.stopPropagation(); handleChange(opt.value); }}
               className={`flex w-full items-center px-3 py-1.5 text-left text-sm transition-colors hover:bg-gray-100 focus:outline-none focus-visible:bg-gray-100 dark:hover:bg-gray-700 dark:focus-visible:bg-gray-700 ${
-                opt.value === value ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
+                opt.value === value ? 'font-medium text-primary dark:text-primary' : 'text-gray-700 dark:text-gray-300'
               }`}
             >
               {opt.label}

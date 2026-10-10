@@ -8,7 +8,7 @@ export function PublicFooter() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-              <MapPin size={20} className="text-blue-600" />
+              <MapPin size={20} className="text-primary" />
               PinPoint
             </Link>
             <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 max-w-xs leading-relaxed">

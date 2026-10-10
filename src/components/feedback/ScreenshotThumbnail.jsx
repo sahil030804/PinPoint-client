@@ -18,7 +18,7 @@ export function ScreenshotThumbnail({ screenshot, annotations, size = 'md' }) {
   return (
     <>
       <div
-        className="shrink-0 cursor-pointer overflow-hidden rounded-[3px] border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+        className="shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
         style={{ width: w, height: h, position: 'relative' }}
         onClick={(e) => { e.stopPropagation(); !error && setOpen(true); }}
       >

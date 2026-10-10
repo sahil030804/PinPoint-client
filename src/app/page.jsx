@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import {
   ArrowRight, CheckCircle, Zap, MousePointerClick,
-  Camera, Code, MessageSquare, Users, Play, BarChart3, MapPin,
+  Camera, Code, MessageSquare, Users, Play, BarChart3, MapPin, Sparkles,
 } from 'lucide-react';
 import { PublicNavbar } from '@/components/common/PublicNavbar';
 import { PublicFooter } from '@/components/common/PublicFooter';
@@ -26,16 +26,16 @@ function FadeIn({ children, delay = 0, direction = 'up' }) {
 function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/80 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950" />
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
-      <div className="absolute top-1/3 -right-32 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/3 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 text-center">
         <FadeIn>
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-5 py-1.5 mb-8">
-            <span className="text-sm">🎉</span>
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Introducing PinPoint 2.0</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 dark:border-primary/30 bg-primary/10 dark:bg-primary/10 px-5 py-1.5 mb-8">
+            <Sparkles size={14} className="text-primary" />
+            <span className="text-sm font-medium text-primary dark:text-primary">Introducing PinPoint 2.0</span>
           </div>
         </FadeIn>
 
@@ -43,7 +43,7 @@ function HeroSection() {
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
             Click anywhere.
             <br />
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">Leave feedback. Ship faster.</span>
+            <span className="bg-gradient-to-r from-primary to-[#5B7A99] bg-clip-text text-transparent">Leave feedback. Ship faster.</span>
           </h1>
         </FadeIn>
 
@@ -57,7 +57,7 @@ function HeroSection() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/register"
-              className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-base font-semibold text-white hover:bg-blue-500 transition-all hover:shadow-xl hover:shadow-blue-500/25 active:scale-[0.97]"
+              className="group inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-white hover:bg-primary/90 transition-all hover:shadow-xl hover:shadow-primary/20 active:scale-[0.97]"
             >
               Get Started Free
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -88,7 +88,7 @@ function HeroSection() {
                   <div className="grid grid-cols-3 gap-4 h-full">
                     {[...Array(6)].map((_, i) => (
                       <div key={i} className="rounded-lg bg-white/70 dark:bg-gray-800/70 p-4 shadow-sm border border-gray-200/70 dark:border-gray-700/50">
-                        <div className="h-3 w-20 bg-blue-100 dark:bg-blue-900/30 rounded mb-3" />
+                        <div className="h-3 w-20 bg-primary/10 dark:bg-primary/20 rounded mb-3" />
                         <div className="h-2 w-full bg-gray-200 dark:bg-gray-700/50 rounded mb-2" />
                         <div className="h-2 w-3/4 bg-gray-200 dark:bg-gray-700/50 rounded mb-2" />
                         <div className="h-2 w-1/2 bg-gray-200 dark:bg-gray-700/50 rounded" />
@@ -103,10 +103,10 @@ function HeroSection() {
                     transition={{ delay: 0.8, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="absolute top-1/3 right-8 max-w-xs w-full"
                   >
-                    <div className="relative rounded-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 p-4 shadow-lg shadow-blue-500/10">
-                      <div className="absolute -left-2 top-6 w-3 h-3 bg-white dark:bg-gray-800 border-l border-t border-blue-200 dark:border-blue-700 rotate-[-45deg]" />
+                    <div className="relative rounded-xl border border-primary/30 dark:border-primary/40 bg-white dark:bg-gray-800 p-4 shadow-lg shadow-primary/10">
+                      <div className="absolute -left-2 top-6 w-3 h-3 bg-white dark:bg-gray-800 border-l border-t border-primary/30 dark:border-primary/40 rotate-[-45deg]" />
                       <div className="flex items-start gap-3">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary">
                           <MapPin size={14} />
                         </div>
                         <div>
@@ -129,7 +129,7 @@ function HeroSection() {
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute bottom-6 right-6"
                 >
-                  <div className="rounded-full bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/30 flex items-center gap-2 cursor-pointer hover:bg-blue-500 transition-colors">
+                  <div className="rounded-full bg-primary px-5 py-3 text-sm font-medium text-white shadow-lg shadow-primary/20 flex items-center gap-2 cursor-pointer hover:bg-primary/90 transition-colors">
                     <MessageSquare size={16} />
                     Leave Feedback
                   </div>
@@ -178,7 +178,7 @@ function HowItWorksSection() {
         </FadeIn>
 
         <div className="mt-16 grid gap-8 md:grid-cols-3 relative">
-          <div className="hidden md:block absolute top-12 left-[16.67%] right-[16.67%] h-0.5 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200 dark:from-blue-800 dark:via-indigo-800 dark:to-purple-800" />
+          <div className="hidden md:block absolute top-12 left-[16.67%] right-[16.67%] h-0.5 bg-gradient-to-r from-primary/30 via-primary/20 to-primary/10 dark:from-primary/40 dark:via-primary/30 dark:to-primary/20" />
 
           {steps.map((step, i) => {
             const Icon = step.icon;
@@ -186,8 +186,8 @@ function HowItWorksSection() {
               <FadeIn key={i} delay={0.2 * i}>
                 <div className="relative text-center">
                   <div className="relative mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
-                    <Icon size={32} className="text-blue-600 dark:text-blue-400" />
-                    <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                    <Icon size={32} className="text-primary dark:text-primary" />
+                    <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                       {i + 1}
                     </span>
                   </div>
@@ -247,10 +247,10 @@ function FeaturesSection() {
   ];
 
   const colorClasses = {
-    blue: { bg: 'bg-blue-50 dark:bg-blue-950/30', icon: 'text-blue-600 dark:text-blue-400', border: 'hover:border-blue-200 dark:hover:border-blue-800' },
-    indigo: { bg: 'bg-indigo-50 dark:bg-indigo-950/30', icon: 'text-indigo-600 dark:text-indigo-400', border: 'hover:border-indigo-200 dark:hover:border-indigo-800' },
-    purple: { bg: 'bg-purple-50 dark:bg-purple-950/30', icon: 'text-purple-600 dark:text-purple-400', border: 'hover:border-purple-200 dark:hover:border-purple-800' },
-    orange: { bg: 'bg-orange-50 dark:bg-orange-950/30', icon: 'text-orange-600 dark:text-orange-400', border: 'hover:border-orange-200 dark:hover:border-orange-800' },
+    blue: { bg: 'bg-primary/10 dark:bg-primary/10', icon: 'text-primary dark:text-primary', border: 'hover:border-primary/30 dark:hover:border-primary/40' },
+    indigo: { bg: 'bg-primary/10 dark:bg-primary/10', icon: 'text-primary dark:text-primary', border: 'hover:border-primary/30 dark:hover:border-primary/30' },
+    purple: { bg: 'bg-muted dark:bg-muted', icon: 'text-muted-foreground', border: 'hover:border-border' },
+    orange: { bg: 'bg-[#F0EBDC] dark:bg-[#2B2718]/30', icon: 'text-orange-600 dark:text-orange-400', border: 'hover:border-orange-200 dark:hover:border-orange-800' },
   };
 
   return (
@@ -307,7 +307,7 @@ function PricingSection() {
               whileHover={{ y: -4 }}
               className="relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-lg shadow-gray-900/5 overflow-hidden"
             >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-primary/60" />
               <div className="text-center">
                 <p className="text-5xl font-bold text-gray-900 dark:text-white tracking-tight">
                   $0<span className="text-lg font-medium text-gray-500 dark:text-gray-400">/mo</span>
@@ -348,9 +348,9 @@ function PricingSection() {
 function FinalCTASection() {
   return (
     <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary via-[#344D65] to-[#2C4257]" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <FadeIn>
@@ -367,7 +367,7 @@ function FinalCTASection() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/register"
-              className="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-blue-700 hover:bg-blue-50 transition-all active:scale-[0.97] shadow-xl"
+              className="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-primary hover:bg-primary/10 transition-all active:scale-[0.97] shadow-xl"
             >
               Get Started Free
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />

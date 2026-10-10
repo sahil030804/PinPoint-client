@@ -551,7 +551,7 @@ export default function ApiKeysPage() {
                                 {webhook.isActive ? (
                                   <><Circle size={12} /> Disable</>
                                 ) : (
-                                  <><Circle size={12} className="text-emerald-500" /> Enable</>
+                                  <><Circle size={12} className="text-[#6E8F7E] dark:text-[#8DB8A1]" /> Enable</>
                                 )}
                               </button>
                               <button

@@ -1,12 +1,12 @@
 'use client';
 
-import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { OctagonAlert, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
-  critical: { label: 'Critical', icon: ArrowUp, class: 'text-red-500' },
-  high: { label: 'High', icon: ArrowUp, class: 'text-orange-500' },
-  medium: { label: 'Medium', icon: Minus, class: 'text-yellow-500' },
-  low: { label: 'Low', icon: ArrowDown, class: 'text-emerald-500' },
+  critical: { label: 'Critical', icon: OctagonAlert, class: 'text-[#9C6464] dark:text-[#C48F8F]' },
+  high: { label: 'High', icon: ArrowUp, class: 'text-[#A3805E] dark:text-[#C2A07E]' },
+  medium: { label: 'Medium', icon: Minus, class: 'text-[#76879A] dark:text-[#93A5B8]' },
+  low: { label: 'Low', icon: ArrowDown, class: 'text-[#6E8F7E] dark:text-[#8DB8A1]' },
 };
 
 export function PriorityBadge({ priority }) {

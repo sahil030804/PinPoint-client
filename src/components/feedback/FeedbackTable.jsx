@@ -1,26 +1,26 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { OctagonAlert, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import { calculateColumnWidths } from '@/lib/columnWidths';
 import { DataTable } from '@/components/common/DataTable';
 import { FeedbackInlineField, STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/components/feedback/FeedbackInlineField';
 
 const STATUS_DOT = {
-  new: 'bg-gray-400',
-  open: 'bg-orange-500',
-  in_progress: 'bg-blue-500',
-  testing: 'bg-purple-500',
-  done: 'bg-emerald-500',
-  closed: 'bg-gray-400',
+  new: 'bg-[#9AA9B8]',
+  open: 'bg-[#5E7E9C]',
+  in_progress: 'bg-[#A68F5E]',
+  testing: 'bg-[#8B86A8]',
+  done: 'bg-[#6E9A82]',
+  closed: 'bg-[#9AA9B8]',
 };
 
 const PRIORITY_ICON = {
-  critical: { icon: ArrowUp, color: 'text-red-600' },
-  high: { icon: ArrowUp, color: 'text-orange-500' },
-  medium: { icon: Minus, color: 'text-yellow-500' },
-  low: { icon: ArrowDown, color: 'text-emerald-500' },
+  critical: { icon: OctagonAlert, color: 'text-[#9C6464] dark:text-[#C48F8F]' },
+  high: { icon: ArrowUp, color: 'text-[#A3805E] dark:text-[#C2A07E]' },
+  medium: { icon: Minus, color: 'text-[#76879A] dark:text-[#93A5B8]' },
+  low: { icon: ArrowDown, color: 'text-[#6E8F7E] dark:text-[#8DB8A1]' },
 };
 
 const STATUS_LABEL = {
@@ -33,7 +33,7 @@ const STATUS_LABEL = {
 };
 
 function getAvatarUrl(name) {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || '')}&background=2563eb&color=fff&size=24`;
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || '')}&background=3E5A75&color=fff&size=24`;
 }
 
 function StatusDot({ value }) {

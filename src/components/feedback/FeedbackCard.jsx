@@ -7,18 +7,18 @@ import { ScreenshotThumbnail } from '@/components/feedback/ScreenshotThumbnail';
 export function FeedbackCard({ feedback, onClick }) {
   return (
     <div
-      className="cursor-pointer rounded-[3px] border border-[#DFE1E6] bg-white p-4 transition-all hover:shadow-[0_2px_4px_rgba(9,30,66,0.25)] active:shadow-none dark:border-[#344563] dark:bg-[#253858]"
+      className="cursor-pointer rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md active:shadow-none dark:border-border dark:bg-card"
       onClick={() => onClick?.(feedback)}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-[#172B4D] truncate dark:text-white">
+          <h3 className="text-sm font-semibold text-foreground truncate dark:text-foreground">
             {feedback.title || 'Untitled Feedback'}
           </h3>
-          <p className="mt-1 text-sm text-[#5E6C84] line-clamp-2 dark:text-[#A5ADBA]">
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 dark:text-muted-foreground">
             {feedback.comment}
           </p>
-          <p className="mt-1 text-xs text-[#6B778C] truncate">
+          <p className="mt-1 text-xs text-muted-foreground truncate">
             {feedback.pageUrl}
           </p>
         </div>
@@ -34,7 +34,7 @@ export function FeedbackCard({ feedback, onClick }) {
         </div>
       )}
 
-      <div className="mt-3 flex items-center gap-4 text-xs text-[#6B778C]">
+      <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
         {feedback.reporterName && (
           <span>by {feedback.reporterName}</span>
         )}

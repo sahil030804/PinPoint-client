@@ -15,7 +15,7 @@ export function ToastContainer({ toasts, removeToast }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className={`pointer-events-auto flex items-center gap-2 rounded-[3px] px-3 py-2 text-sm font-medium shadow-[0_4px_12px_rgba(9,30,66,0.25)] ${
+            className={`pointer-events-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium shadow-[0_4px_12px_rgba(9,30,66,0.25)] ${
               toast.type === 'success'
                 ? 'bg-[#00875A] text-white'
                 : toast.type === 'error'

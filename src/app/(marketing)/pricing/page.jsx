@@ -63,19 +63,18 @@ function PricingCard({ plan, isAnnual, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={plan.highlighted ? { y: -6 } : { y: -3 }}
-      className={`relative flex flex-col rounded-2xl border p-8 transition-all duration-300 ${
+      className={`relative flex flex-col rounded-2xl border p-8 transition-shadow duration-300 ${
         plan.highlighted
-          ? 'border-blue-500 bg-white dark:bg-gray-900 shadow-xl shadow-blue-500/10 scale-105 z-10'
+          ? 'border-primary bg-white dark:bg-gray-900 shadow-xl shadow-primary/10 md:-my-2 md:py-10 z-10'
           : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg'
       }`}
     >
       {plan.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-1 text-xs font-semibold text-white shadow-lg">
+          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary to-[#2C4257] px-4 py-1 text-xs font-semibold text-white shadow-lg">
             <Star size={12} />
             {plan.badge}
           </span>
@@ -101,7 +100,7 @@ function PricingCard({ plan, isAnnual, index }) {
       <ul className="mt-8 space-y-3 flex-1">
         {plan.features.map((feature) => (
           <li key={feature} className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <CheckCircle size={16} className="mt-0.5 shrink-0 text-green-500" />
+            <CheckCircle size={16} className="mt-0.5 shrink-0 text-[#6E8F7E] dark:text-[#8DB8A1]" />
             <span>{feature}</span>
           </li>
         ))}
@@ -116,7 +115,7 @@ function PricingCard({ plan, isAnnual, index }) {
           href={plan.href}
           className={`flex items-center justify-center gap-2 w-full rounded-xl py-3.5 text-sm font-semibold transition-all ${
             plan.highlighted
-              ? 'bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25'
+              ? 'bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20'
               : 'border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
@@ -127,7 +126,7 @@ function PricingCard({ plan, isAnnual, index }) {
 
       {plan.name === 'Business' && (
         <p className="mt-3 text-center text-xs text-gray-400">
-          Or <Link href="/auth/register" className="text-blue-600 hover:underline">start free</Link> and upgrade later
+          Or <Link href="/auth/register" className="text-primary hover:underline">start free</Link> and upgrade later
         </p>
       )}
     </motion.div>
@@ -143,7 +142,7 @@ function CompareTable() {
     { name: 'SSO', free: '\u2716', pro: '\u2716', biz: '\u2714' },
   ];
 
-  const checkClass = 'text-green-600 dark:text-green-400';
+  const checkClass = 'text-[#6E8F7E] dark:text-[#8DB8A1]';
   const xClass = 'text-gray-400 dark:text-gray-500';
 
   return (
@@ -157,7 +156,7 @@ function CompareTable() {
             <tr className="border-b border-gray-200 dark:border-gray-800">
               <th className="py-3 pr-8 text-left text-gray-500 dark:text-gray-400 font-medium">Features</th>
               <th className="py-3 px-4 text-center font-semibold text-gray-900 dark:text-white">Free</th>
-              <th className="py-3 px-4 text-center font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 rounded-t-lg">Pro</th>
+              <th className="py-3 px-4 text-center font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-t-lg">Pro</th>
               <th className="py-3 px-4 text-center font-semibold text-gray-900 dark:text-white">Business</th>
             </tr>
           </thead>
@@ -166,7 +165,7 @@ function CompareTable() {
               <tr key={i} className="border-b border-gray-100 dark:border-gray-800/50">
                 <td className="py-3 pr-8 text-gray-700 dark:text-gray-300">{f.name}</td>
                 <td className={`py-3 px-4 text-center ${f.free === '\u2714' ? checkClass : xClass}`}>{f.free}</td>
-                <td className={`py-3 px-4 text-center bg-blue-50 dark:bg-blue-950/30 ${f.pro === '\u2714' ? checkClass : xClass}`}>{f.pro}</td>
+                <td className={`py-3 px-4 text-center bg-primary/10 dark:bg-primary/10 ${f.pro === '\u2714' ? checkClass : xClass}`}>{f.pro}</td>
                 <td className={`py-3 px-4 text-center ${f.biz === '\u2714' ? checkClass : xClass}`}>{f.biz}</td>
               </tr>
             ))}
@@ -207,7 +206,7 @@ export default function PricingPage() {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className={`relative h-7 w-12 rounded-full transition-colors ${isAnnual ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'}`}
+            className={`relative h-7 w-12 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-700'}`}
           >
             <span
               className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${

@@ -38,12 +38,12 @@ const TrendChart = dynamic(
 );
 
 const ACTION_ICONS = {
-  created: { icon: Bug, color: "text-blue-600 bg-blue-100" },
+  created: { icon: Bug, color: "text-primary bg-primary/10" },
   assigned: { icon: UserPlus, color: "text-purple-600 bg-purple-100" },
   unassigned: { icon: UserX, color: "text-muted-foreground bg-muted" },
   status_changed: { icon: ArrowRightLeft, color: "text-orange-600 bg-orange-100" },
   priority_changed: { icon: Zap, color: "text-yellow-600 bg-yellow-100" },
-  comment_added: { icon: Mail, color: "text-blue-600 bg-blue-100" },
+  comment_added: { icon: Mail, color: "text-primary bg-primary/10" },
   resolved: { icon: CheckCircle2, color: "text-emerald-600 bg-emerald-100" },
   reopened: { icon: RotateCcw, color: "text-orange-600 bg-orange-100" },
 };
@@ -87,7 +87,7 @@ function TrendBadge({ value, className }) {
   return (
     <span className={cn(
       "inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-xs font-semibold",
-      isUp ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400" : "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400"
+      isUp ? "bg-[#E2ECE6] text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400" : "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400"
     )}>
       <TrendingUp size={14} className={cn(!isUp && "rotate-180")} />
       {isUp ? "+" : ""}{value}%
@@ -181,19 +181,19 @@ export default function DashboardPage() {
           label="Open"
           value={stats?.open}
           icon={AlertCircle}
-          iconColor="text-orange-500 bg-orange-50 dark:bg-orange-950"
+          iconColor="text-[#A3805E] dark:text-[#C2A07E] bg-[#F0EBDC] dark:bg-[#2B2718]"
         />
         <StatCard
           label="In Progress"
           value={stats?.inProgress}
           icon={Clock}
-          iconColor="text-blue-500 bg-blue-50 dark:bg-blue-950"
+          iconColor="text-primary bg-primary/10 dark:bg-primary/10"
         />
         <StatCard
           label="Resolved This Month"
           value={stats?.resolved}
           icon={CheckCircle2}
-          iconColor="text-emerald-500 bg-emerald-50 dark:bg-emerald-950"
+          iconColor="text-[#6E8F7E] dark:text-[#8DB8A1] bg-[#E2ECE6] dark:bg-[#16271F]"
         />
       </div>
 
