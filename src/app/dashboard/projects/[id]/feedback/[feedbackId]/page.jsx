@@ -4,6 +4,15 @@ import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { useToast } from '@/providers/ToastProvider';
+import { useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import dynamic from 'next/dynamic';
 import { useFeedback, useComments, useAddComment, useFeedbackTimeline } from '@/hooks/useFeedback';
 import { useUpdateFeedback } from '@/hooks/useFeedback';
@@ -18,7 +27,6 @@ import {
   Share2,
   MoreVertical,
   Send,
-  Paperclip,
   MessageSquare,
   Link as LinkIcon,
   Monitor,
@@ -39,7 +47,7 @@ function ScreenshotViewer({ screenshot, annotations }) {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-[3px] border border-gray-200 dark:border-gray-800">
+      <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
         <img
           src={url}
           alt="Feedback screenshot"
@@ -52,10 +60,10 @@ function ScreenshotViewer({ screenshot, annotations }) {
               <div
                 key={ann.id || i}
                 className="absolute pointer-events-auto cursor-pointer"
-                style={{ left: `${ann.x}%`, top: `${ann.y}%` }}
+                style={{ left: `${ann.x * 100}%`, top: `${ann.y * 100}%`, transform: 'translate(-50%, -50%)' }}
                 onClick={() => setOpen(true)}
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-lg ring-2 ring-white dark:ring-gray-900">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-lg ring-2 ring-white dark:ring-gray-900">
                   {ann.number || i + 1}
                 </span>
               </div>
@@ -79,6 +87,7 @@ export default function FeedbackDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user, workspaceRole } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const canAssign = ['owner', 'admin', 'developer'].includes(workspaceRole);
   const canEdit = workspaceRole !== 'client' && workspaceRole !== 'viewer';
   const canAnnotate = ['owner', 'admin', 'developer'].includes(workspaceRole);
@@ -87,16 +96,44 @@ export default function FeedbackDetailPage() {
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
   const addComment = useAddComment();
   const updateFeedback = useUpdateFeedback();
+  const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [editing, setEditing] = useState(false);
   const [editStatus, setEditStatus] = useState('');
   const [editPriority, setEditPriority] = useState('');
   const [editAssignee, setEditAssignee] = useState('');
   const [annotatorOpen, setAnnotatorOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  async function handleShare() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toastSuccess('Link copied to clipboard');
+    } catch {
+      toastError('Could not copy link');
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await api.del(`/feedback/${params.feedbackId}`);
+      queryClient.invalidateQueries({ queryKey: ['feedback'] });
+      toastSuccess('Feedback deleted');
+      router.push(`/dashboard/projects/${params.id}`);
+    } catch (err) {
+      toastError(err.message || 'Failed to delete feedback');
+      setShowDeleteConfirm(false);
+    }
+  }
 
   async function handleSaveAnnotations(annotations) {
-    await updateFeedback.mutateAsync({ id: params.feedbackId, annotations });
-    setAnnotatorOpen(false);
+    try {
+      await updateFeedback.mutateAsync({ id: params.feedbackId, annotations });
+      setAnnotatorOpen(false);
+      toastSuccess('Annotations saved');
+    } catch (err) {
+      toastError(err.message || 'Failed to save annotations');
+    }
   }
 
   function startEditing() {
@@ -115,7 +152,13 @@ export default function FeedbackDetailPage() {
       updates.assigneeId = editAssignee || null;
     }
     if (Object.keys(updates).length > 0) {
-      await updateFeedback.mutateAsync({ id: params.feedbackId, ...updates });
+      try {
+        await updateFeedback.mutateAsync({ id: params.feedbackId, ...updates });
+        toastSuccess('Feedback updated');
+      } catch (err) {
+        toastError(err.message || 'Failed to update feedback');
+        return;
+      }
     }
     setEditing(false);
   }
@@ -123,16 +166,20 @@ export default function FeedbackDetailPage() {
   async function handleAddComment(e) {
     e.preventDefault();
     if (!newComment.trim()) return;
-    await addComment.mutateAsync({ feedbackId: params.feedbackId, body: newComment });
-    setNewComment('');
+    try {
+      await addComment.mutateAsync({ feedbackId: params.feedbackId, body: newComment });
+      setNewComment('');
+    } catch (err) {
+      toastError(err.message || 'Failed to post comment');
+    }
   }
 
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
         <div className="h-8 w-64 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
-        <div className="h-32 animate-pulse rounded-[3px] bg-gray-100 dark:bg-gray-800" />
-        <div className="h-48 animate-pulse rounded-[3px] bg-gray-100 dark:bg-gray-800" />
+        <div className="h-32 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
+        <div className="h-48 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
       </div>
     );
   }
@@ -153,7 +200,13 @@ export default function FeedbackDetailPage() {
       <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/dashboard/projects');
+              }
+            }}
             className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           >
             <ArrowLeft size={16} />
@@ -167,7 +220,7 @@ export default function FeedbackDetailPage() {
               href={`/dashboard/projects/${params.id}`}
               className="hover:text-gray-700 dark:hover:text-gray-300"
             >
-              {feedback.project?.name || `Project`}
+              {feedback.Website?.Project?.name || 'Project'}
             </NextLink>
             <span>/</span>
             <span className="text-gray-900 dark:text-white font-medium">
@@ -176,40 +229,90 @@ export default function FeedbackDetailPage() {
           </nav>
         </div>
         <div className="flex items-center gap-1">
-          <button className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
             <Share2 size={15} />
             Share
           </button>
-          <button className="rounded-[3px] p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">
-            <MoreVertical size={16} />
-          </button>
+          <DropdownMenu
+            onOpenChange={(open) => { if (!open) setShowDeleteConfirm(false); }}
+          >
+            <DropdownMenuTrigger
+              className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              aria-label="Feedback actions"
+            >
+              <MoreVertical size={16} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {!showDeleteConfirm ? (
+                <>
+                  <DropdownMenuItem onClick={handleShare}>
+                    Copy link
+                  </DropdownMenuItem>
+                  {canAssign && (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      closeOnClick={false}
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      Delete feedback
+                    </DropdownMenuItem>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                    Delete this feedback permanently?
+                  </div>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={handleDelete}
+                  >
+                    Yes, delete
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowDeleteConfirm(false)}>
+                    Cancel
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {/* Main 2-column layout */}
-      <div className="p-6 grid gap-8 lg:grid-cols-[2fr_1fr]">
+      <div className="p-6 grid gap-8 lg:grid-cols-[2fr_minmax(0,1fr)]">
         {/* LEFT: Main content */}
         <div className="space-y-8">
           {/* Reported Screenshot */}
-          <div className="rounded-[3px] border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+          <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white">Reported Screenshot</h2>
               {feedback.screenshot && canAnnotate && (
                 <button
                   onClick={() => setAnnotatorOpen(true)}
-                  className="rounded-[3px] bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-500 active:scale-[0.97] transition-transform"
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary/90 active:scale-[0.97] transition-transform"
                 >
                   {feedback.annotations?.length ? 'Edit Annotations' : 'Annotate Screenshot'}
                 </button>
               )}
             </div>
             <div className="p-6">
-              <ScreenshotViewer screenshot={feedback.screenshot} annotations={feedback.annotations} />
+              {feedback.screenshot ? (
+                <ScreenshotViewer screenshot={feedback.screenshot} annotations={feedback.annotations} />
+              ) : (
+                <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-gray-300 py-10 text-center dark:border-gray-700">
+                  <Monitor size={20} className="text-gray-400" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No screenshot was captured for this feedback.</p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Comments */}
-          <div className="rounded-[3px] border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+          <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div className="border-b border-gray-100 px-6 py-4 dark:border-gray-800">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white">Comments ({comments.length})</h2>
             </div>
@@ -218,13 +321,13 @@ export default function FeedbackDetailPage() {
               {commentsLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="h-16 animate-pulse rounded-[3px] bg-gray-100 dark:bg-gray-800" />
+                    <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
                   ))}
                 </div>
               ) : comments.length > 0 ? (
                 comments.map((comment) => (
                   <div key={comment.id} className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
                       {comment.author?.name?.[0] || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -245,12 +348,12 @@ export default function FeedbackDetailPage() {
                         </span>
                         {/* Check if this comment author is the feedback assignee or reporter */}
                         {(comment.author?.id === feedback.assignee?.id) && (
-                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary dark:bg-primary/20 dark:text-primary">
                             Maintainer
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
                         {comment.body}
                       </p>
                     </div>
@@ -263,7 +366,7 @@ export default function FeedbackDetailPage() {
 
             <form onSubmit={handleAddComment} className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
                   {user?.name?.[0] || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -275,20 +378,14 @@ export default function FeedbackDetailPage() {
                       e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
                     }}
                     rows={1}
-                    className="block w-full resize-none rounded-[3px] border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
-                    placeholder="Add a comment..."
+                    className="block w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                    placeholder="Add a comment…"
                   />
-                  <div className="mt-2 flex items-center justify-between">
-                    <button
-                      type="button"
-                      className="rounded-[3px] p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                      <Paperclip size={16} />
-                    </button>
+                  <div className="mt-2 flex items-center justify-end">
                     <button
                       type="submit"
                       disabled={!newComment.trim() || addComment.isPending}
-                      className="inline-flex items-center gap-1.5 rounded-[3px] bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50 active:scale-[0.97] transition-transform"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 active:scale-[0.97] transition-transform"
                     >
                       {addComment.isPending ? 'Sending...' : 'Send'}
                       <Send size={14} />
@@ -304,20 +401,20 @@ export default function FeedbackDetailPage() {
         <div className="space-y-6">
           {/* Title + Reporter */}
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{feedback.title || 'Untitled Feedback'}</h1>
+            <h1 className="text-xl font-bold text-gray-900 break-words dark:text-white">{feedback.title || 'Untitled Feedback'}</h1>
             <p className="mt-1 text-sm text-gray-500">
               Reported by {reporterName}
             </p>
           </div>
 
           {/* Details (Status, Priority, Assignee) */}
-          <div className="rounded-[3px] border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+          <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Details</h3>
               {!editing && canEdit && (
                 <button
                   onClick={startEditing}
-                  className="text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium"
+                  className="text-xs text-primary hover:text-primary/90 dark:text-primary font-medium"
                 >
                   Edit
                 </button>
@@ -366,13 +463,13 @@ export default function FeedbackDetailPage() {
                     <button
                       onClick={saveChanges}
                       disabled={updateFeedback.isPending}
-                      className="rounded-[3px] bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-50 active:scale-[0.97] transition-transform"
+                      className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-primary/90 disabled:opacity-50 active:scale-[0.97] transition-transform"
                     >
                       {updateFeedback.isPending ? 'Saving...' : 'Save'}
                     </button>
                     <button
                       onClick={() => setEditing(false)}
-                      className="rounded-[3px] border border-gray-300 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 active:scale-[0.97] transition-transform"
+                      className="rounded-lg border border-gray-300 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 active:scale-[0.97] transition-transform"
                     >
                       Cancel
                     </button>
@@ -413,7 +510,7 @@ export default function FeedbackDetailPage() {
           </div>
 
           {/* Environment Context */}
-          <div className="rounded-[3px] border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+          <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div className="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Environment context</h3>
             </div>
@@ -452,7 +549,7 @@ export default function FeedbackDetailPage() {
           </div>
 
           {/* Activity Timeline */}
-          <div className="rounded-[3px] border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+          <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div className="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Activity</h3>
             </div>

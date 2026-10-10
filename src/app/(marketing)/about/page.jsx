@@ -58,7 +58,7 @@ export default function AboutPage() {
         >
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white tracking-tight leading-[1.1]">
             Built to make feedback{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+            <span className="text-primary">
               finally make sense.
             </span>
           </h1>
@@ -101,7 +101,7 @@ export default function AboutPage() {
                   ))}
                 </div>
                 <blockquote className="relative">
-                  <Quote size={24} className="text-blue-600/15 dark:text-blue-400/15 absolute -top-1 -left-1" />
+                  <Quote size={24} className="text-primary/15 dark:text-primary/15 absolute -top-1 -left-1" />
                   <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed relative z-10 pl-6">
                     As a developer, I built PinPoint because I was tired of chasing context.
                     Now every pin carries the exact screenshot, coordinates, and browser
@@ -109,7 +109,7 @@ export default function AboutPage() {
                   </p>
                 </blockquote>
                 <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#2C4257] text-sm font-bold text-white shadow-sm">
                     SR
                   </div>
                   <div>
@@ -138,8 +138,8 @@ export default function AboutPage() {
               const Icon = value.icon;
               return (
                 <FadeIn key={value.title} delay={0.1 * i}>
-                  <div className="group rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 transition-all duration-300 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg hover:shadow-blue-500/5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 mb-5">
+                  <div className="group rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary mb-5">
                       <Icon size={24} />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{value.title}</h3>
@@ -176,7 +176,7 @@ export default function AboutPage() {
                   </p>
                 </div>
                 <div className="mt-6 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                     SK
                   </div>
                   <div>
@@ -198,7 +198,7 @@ export default function AboutPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link
                     href="/auth/register"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20"
                   >
                     Start Free Trial
                     <ArrowRight size={16} />
@@ -217,7 +217,7 @@ export default function AboutPage() {
       </section>
 
       <section className="relative py-24 sm:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-[#344D65] to-[#2C4257]" />
         <div className="absolute top-0 left-1/3 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-6 text-center">
@@ -230,7 +230,7 @@ export default function AboutPage() {
           <div className="mt-8">
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-blue-700 hover:bg-blue-50 transition-all shadow-xl active:scale-[0.97]"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-primary hover:bg-primary/10 transition-all shadow-xl active:scale-[0.97]"
             >
               Start Free Trial
               <ArrowRight size={18} />

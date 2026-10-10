@@ -174,8 +174,12 @@ export default function ApiKeysPage() {
     e.preventDefault();
     if (!newKeyName.trim()) return;
     setCreatedKey(null);
-    await createMutation.mutateAsync(newKeyName.trim());
-    setNewKeyName('');
+    try {
+      await createMutation.mutateAsync(newKeyName.trim());
+      setNewKeyName('');
+    } catch {
+      // surfaced by mutation onError toast
+    }
   }
 
   function handleCopy(text) {
@@ -193,7 +197,11 @@ export default function ApiKeysPage() {
 
   async function handleRoll(key) {
     setRollTarget(key);
-    await rollMutation.mutateAsync(key);
+    try {
+      await rollMutation.mutateAsync(key);
+    } catch {
+      // surfaced by mutation onError toast
+    }
   }
 
   function toggleWebhookEvent(value) {
@@ -543,7 +551,7 @@ export default function ApiKeysPage() {
                                 {webhook.isActive ? (
                                   <><Circle size={12} /> Disable</>
                                 ) : (
-                                  <><Circle size={12} className="text-emerald-500" /> Enable</>
+                                  <><Circle size={12} className="text-[#6E8F7E] dark:text-[#8DB8A1]" /> Enable</>
                                 )}
                               </button>
                               <button
@@ -716,7 +724,7 @@ export default function ApiKeysPage() {
                 Cancel
               </button>
               <button
-                onClick={() => deleteMutation.mutateAsync(deleteConfirm.id)}
+                onClick={() => deleteMutation.mutateAsync(deleteConfirm.id).catch(() => {})}
                 disabled={deleteMutation.isPending}
                 className="saas-btn-danger disabled:opacity-50 h-9 text-sm"
               >

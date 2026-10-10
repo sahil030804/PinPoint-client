@@ -4,87 +4,56 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { useToast } from '@/providers/ToastProvider';
 import dynamic from 'next/dynamic';
-import { useProjects, useWebsites, useCreateWebsite, useWorkspaceFeedback } from '@/hooks/useWorkspace';
+import { useProjects, useWebsites, useCreateWebsite, useWorkspaceFeedback, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable } from '@/components/common/DataTable';
-import { StatusBadge } from '@/components/common/StatusBadge';
-import { PriorityBadge } from '@/components/common/PriorityBadge';
+import { FeedbackTable } from '@/components/feedback/FeedbackTable';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { ScreenshotThumbnail } from '@/components/feedback/ScreenshotThumbnail';
 
 const InstallScript = dynamic(() => import('@/components/project/InstallScript'), { ssr: false });
 const WidgetConfigForm = dynamic(() => import('@/components/project/WidgetConfigForm'), { ssr: false });
-
-const FEEDBACK_COLUMNS = [
-  {
-    key: 'screenshot',
-    header: 'Screenshot',
-    width: '140px',
-    render: (item) => <ScreenshotThumbnail screenshot={item.screenshot} annotations={item.annotations} />,
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (item) => <StatusBadge status={item.status} />,
-  },
-  {
-    key: 'priority',
-    header: 'Priority',
-    render: (item) => <PriorityBadge priority={item.priority} />,
-  },
-  {
-    key: 'title',
-    header: 'Issue',
-    render: (item) => (
-      <div>
-        <p className="font-medium text-foreground">{item.title || item.comment?.slice(0, 60)}</p>
-        <p className="text-xs text-muted-foreground">{item.pageUrl}</p>
-      </div>
-    ),
-  },
-  {
-    key: 'assignee',
-    header: 'Assignee',
-    render: (item) => item.assignee?.name || <span className="text-muted-foreground">—</span>,
-  },
-  {
-    key: 'createdAt',
-    header: 'Created',
-    render: (item) => (
-      <span className="text-sm text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</span>
-    ),
-  },
-];
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { error: toastError } = useToast();
   const queryClient = useQueryClient();
   const { data: projects = [] } = useProjects(user?.workspaceId);
   const project = projects.find((p) => p.id === params.id);
   const { data: websites = [], isLoading: websitesLoading } = useWebsites(params.id);
-  const { data: feedbackData, isLoading: feedbackLoading } = useWorkspaceFeedback(user?.workspaceId, { projectId: params.id });
+  const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
 
   const [showAddWebsite, setShowAddWebsite] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [showWidgetModal, setShowWidgetModal] = useState(false);
   const [widgetTab, setWidgetTab] = useState('configure');
+  const [feedbackPage, setFeedbackPage] = useState(1);
   const addWebsite = useCreateWebsite();
 
+  const { data: feedbackData, isLoading: feedbackLoading } = useWorkspaceFeedback(user?.workspaceId, {
+    projectId: params.id,
+    page: feedbackPage,
+  });
+
   const feedback = feedbackData?.data || [];
+  const pagination = feedbackData?.pagination;
   const firstWebsite = websites[0];
 
   async function handleAddWebsite(e) {
     e.preventDefault();
     if (!websiteUrl.trim()) return;
-    const res = await addWebsite.mutateAsync({ projectId: params.id, url: websiteUrl });
-    if (res.success) {
-      setShowAddWebsite(false);
-      setWebsiteUrl('');
+    try {
+      const res = await addWebsite.mutateAsync({ projectId: params.id, url: websiteUrl });
+      if (res.success) {
+        setShowAddWebsite(false);
+        setWebsiteUrl('');
+      }
+    } catch (err) {
+      toastError(err.message || 'Failed to add website');
     }
   }
 
@@ -96,7 +65,11 @@ export default function ProjectDetailPage() {
   });
 
   async function handleSaveWidgetConfig(websiteId, data) {
-    await updateWebsiteMutation.mutateAsync({ websiteId, ...data });
+    try {
+      await updateWebsiteMutation.mutateAsync({ websiteId, ...data });
+    } catch (err) {
+      toastError(err.message || 'Failed to save widget settings');
+    }
   }
 
   if (!project) {
@@ -191,11 +164,15 @@ export default function ProjectDetailPage() {
         {/* Feedback */}
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-4">Feedback</h3>
-          <DataTable
-            columns={FEEDBACK_COLUMNS}
-            data={feedback}
+          <FeedbackTable
+            feedback={feedback}
             loading={feedbackLoading}
+            pagination={pagination}
+            onPageChange={setFeedbackPage}
             onRowClick={(item) => router.push(`/dashboard/projects/${params.id}/feedback/${item.id}`)}
+            members={members}
+            showProject={false}
+            compact={true}
             emptyState={
               <EmptyState
                 title="No feedback yet"

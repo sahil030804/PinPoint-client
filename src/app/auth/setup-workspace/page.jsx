@@ -7,6 +7,18 @@ import { useToast } from '@/providers/ToastProvider';
 import { api } from '@/lib/api';
 import { ArrowRight, ArrowLeft, Rocket, Plus } from 'lucide-react';
 
+function getSafeRedirect(fallback) {
+  const returnTo = sessionStorage.getItem('pp_return_to');
+  sessionStorage.removeItem('pp_return_to');
+  if (!returnTo || typeof returnTo !== 'string') return fallback;
+  if (returnTo.startsWith('/')) return returnTo;
+  try {
+    const u = new URL(returnTo, window.location.origin);
+    if (u.origin === window.location.origin) return returnTo;
+  } catch {}
+  return fallback;
+}
+
 export default function SetupWorkspacePage() {
   const router = useRouter();
   const { user, workspaces, switchWorkspace, refreshWorkspaces } = useAuth();
@@ -17,9 +29,7 @@ export default function SetupWorkspacePage() {
 
   useEffect(() => {
     if (user?.workspaceId && workspaces.length > 0) {
-      const returnTo = sessionStorage.getItem('pp_return_to');
-      sessionStorage.removeItem('pp_return_to');
-      router.replace(returnTo || '/dashboard');
+      router.replace(getSafeRedirect('/dashboard'));
     }
   }, [user, workspaces, router]);
 
@@ -31,9 +41,7 @@ export default function SetupWorkspacePage() {
       if (res.success) {
         switchWorkspace(res.data.id);
         await refreshWorkspaces();
-        const returnTo = sessionStorage.getItem('pp_return_to');
-        sessionStorage.removeItem('pp_return_to');
-        router.replace(returnTo || '/dashboard');
+        router.replace(getSafeRedirect('/dashboard'));
       } else {
         toastError(res.error?.message || 'Failed to create workspace');
       }
@@ -46,18 +54,16 @@ export default function SetupWorkspacePage() {
 
   function handleSelect(workspaceId) {
     switchWorkspace(workspaceId);
-    const returnTo = sessionStorage.getItem('pp_return_to');
-    sessionStorage.removeItem('pp_return_to');
-    router.replace(returnTo || '/dashboard');
+    router.replace(getSafeRedirect('/dashboard'));
   }
 
   return (
     <div className="flex min-h-screen">
       {/* Left side — Brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-blue-700 items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-[#2C4257] items-center justify-center">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzEuNjYgMCAzLTEuMzQgMy0zcy0xLjM0LTMtMy0zLTMgMS4zNC0zIDMgMS4zNCAzIDMgM3oiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
         <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-md px-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 mb-8 auth-fade-in">

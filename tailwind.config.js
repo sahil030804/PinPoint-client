@@ -126,10 +126,10 @@ export default {
         lg: 'calc(var(--radius) + 2px)',
       },
       boxShadow: {
-        'jira-raised': '0 1px 1px rgba(9, 30, 66, 0.25)',
-        'jira-overlay': '0 12px 24px rgba(9, 30, 66, 0.25)',
-        'jira-modal': '0 12px 24px -6px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31)',
-        'jira-card-hover': '0 2px 4px rgba(9, 30, 66, 0.25)',
+        'jira-raised': '0 1px 1px rgba(27, 42, 56, 0.08)',
+        'jira-overlay': '0 12px 24px rgba(27, 42, 56, 0.10)',
+        'jira-modal': '0 12px 24px -6px rgba(27, 42, 56, 0.12), 0 0 1px rgba(27, 42, 56, 0.10)',
+        'jira-card-hover': '0 2px 4px rgba(27, 42, 56, 0.08)',
       },
       transitionDuration: {
         'jira-fast': '150ms',

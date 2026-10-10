@@ -127,6 +127,24 @@ export function AuthProvider({ children }) {
     return res;
   }, []);
 
+  // Establish a session from a token+user pair issued outside login/register
+  // (e.g. password reset auto-sign-in). Mirrors login's session setup.
+  const establishSession = useCallback(async (token, user) => {
+    if (!token || !user) return;
+    localStorage.setItem('pp_token', token);
+    api.setToken(token);
+    setUser(user);
+    if (user.role) {
+      setWorkspaceRole(user.role);
+    }
+    const ws = await fetchWorkspaces();
+    if (user.workspaceId) {
+      setActiveWorkspaceId(user.workspaceId);
+    } else if (ws.length > 0) {
+      setActiveWorkspaceId(ws[0].id);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout');
@@ -164,7 +182,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user: exposedUser, loading, workspaces, activeWorkspaceId, workspaceRole, login, register, logout, switchWorkspace, refreshWorkspaceRole, refreshWorkspaces, updateUser }}>
+    <AuthContext.Provider value={{ user: exposedUser, loading, workspaces, activeWorkspaceId, workspaceRole, login, register, establishSession, logout, switchWorkspace, refreshWorkspaceRole, refreshWorkspaces, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

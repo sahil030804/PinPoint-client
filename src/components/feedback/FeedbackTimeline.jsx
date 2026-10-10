@@ -1,6 +1,7 @@
 'use client';
 
 import { useFeedbackTimeline } from '@/hooks/useFeedback';
+import { formatRelativeTime } from '@/lib/utils';
 import {
   Bug,
   UserPlus,
@@ -31,21 +32,6 @@ const ACTION_ICONS = {
   screenshot_updated: Camera,
 };
 
-function formatRelativeTime(dateString) {
-  const now = Date.now();
-  const date = new Date(dateString).getTime();
-  const diff = now - date;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateString).toLocaleDateString();
-}
-
 function ActivityItem({ activity }) {
   const IconComponent = ACTION_ICONS[activity.action];
 
@@ -63,7 +49,7 @@ function ActivityItem({ activity }) {
         return `priority changed from ${activity.metadata?.from} → ${activity.metadata?.to}`;
       case 'comment_added': {
         const preview = activity.metadata?.preview || '';
-        return `commented: "${preview}${preview.length >= 50 ? '...' : ''}"`;
+        return `commented: "${preview}${preview.length >= 50 ? '…' : ''}"`;
       }
       case 'resolved':
         return 'resolved this issue';
@@ -82,7 +68,7 @@ function ActivityItem({ activity }) {
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-900 dark:text-white">
-            {activity.actor?.name || 'Someone'}
+            {activity.actor?.name || 'A visitor'}
           </span>
           <span className="text-xs text-gray-500">{formatRelativeTime(activity.createdAt)}</span>
         </div>
@@ -93,13 +79,24 @@ function ActivityItem({ activity }) {
 }
 
 export function FeedbackTimeline({ feedbackId }) {
-  const { data: activities = [], isLoading } = useFeedbackTimeline(feedbackId);
+  const { data: activities = [], isLoading, isError, refetch } = useFeedbackTimeline(feedbackId);
+
+  if (isError) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-sm text-[#9C6464] dark:text-[#C48F8F] mb-2">Failed to load activity timeline</p>
+        <button onClick={() => refetch()} className="text-sm text-primary hover:underline dark:text-primary">
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-[3px] bg-gray-100 dark:bg-gray-800" />
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
         ))}
       </div>
     );

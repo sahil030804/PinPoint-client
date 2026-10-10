@@ -37,17 +37,17 @@ export default function ForgotPasswordPage() {
           <Link href="/" className="mb-10 block">
             <span className="text-2xl font-bold text-foreground tracking-tight">PinPoint</span>
           </Link>
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/30">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E2ECE6] dark:bg-emerald-900/30">
             <Mail size={28} className="text-emerald-600 dark:text-emerald-400" />
           </div>
           <h1 className="text-xl font-bold text-foreground">Check your email</h1>
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            We&apos;ve sent a password reset link to <strong className="text-foreground">{email}</strong>.
-            Please check your inbox.
+            We&apos;ve sent a password reset link to <strong className="text-foreground">{email}</strong> if
+            an account exists for it. Please check your inbox.
           </p>
           <div className="mt-6 flex items-center justify-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
             <Check size={16} />
-            <span className="font-medium">Email sent successfully</span>
+            <span className="font-medium">Request received</span>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Didn&apos;t receive it?{' '}
@@ -69,10 +69,10 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left side — Brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-blue-700 items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-[#2C4257] items-center justify-center">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzEuNjYgMCAzLTEuMzQgMy0zcy0xLjM0LTMtMy0zLTMgMS4zNC0zIDMgMS4zNCAzIDMgM3oiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
         <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-md px-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 mb-8 auth-fade-in">
@@ -114,6 +114,9 @@ export default function ForgotPasswordPage() {
               </label>
               <input
                 id="email"
+                name="email"
+                autoComplete="email"
+                spellCheck={false}
                 type="email"
                 required
                 value={email}

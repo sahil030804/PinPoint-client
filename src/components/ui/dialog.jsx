@@ -58,8 +58,8 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-[3px] bg-white p-6 text-sm text-[#172B4D] shadow-[0_12px_24px_-6px_rgba(9,30,66,0.25),0_0_1px_rgba(9,30,66,0.31)] outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 dark:bg-[#253858] dark:text-white dark:shadow-[0_12px_24px_-6px_rgba(0,0,0,0.5)]",
-          "border-t-[3px] border-t-[#0052CC] dark:border-t-[#4C9AFF]",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-card p-6 text-sm text-foreground shadow-[0_12px_24px_-6px_rgba(9,30,66,0.25),0_0_1px_rgba(9,30,66,0.31)] outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 dark:bg-card dark:text-foreground dark:shadow-[0_12px_24px_-6px_rgba(0,0,0,0.5)]",
+          "border-t-[3px] border-t-primary dark:border-t-primary",
           className
         )}
         {...props}>
@@ -122,7 +122,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-base font-semibold text-[#172B4D] dark:text-white", className)}
+      className={cn("text-base font-semibold text-foreground dark:text-foreground", className)}
       {...props} />
   );
 }
@@ -135,7 +135,7 @@ function DialogDescription({
     <DialogPrimitive.Description
       data-slot="dialog-description"
       className={cn(
-        "text-sm text-[#5E6C84] dark:text-[#A5ADBA]",
+        "text-sm text-muted-foreground dark:text-muted-foreground",
         className
       )}
       {...props} />

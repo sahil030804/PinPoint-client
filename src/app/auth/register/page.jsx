@@ -42,10 +42,10 @@ function RegisterForm() {
   return (
     <div className="flex min-h-screen">
       {/* Left side — Brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-blue-700 items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-[#2C4257] items-center justify-center">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzEuNjYgMCAzLTEuMzQgMy0zcy0xLjM0LTMtMy0zLTMgMS4zNC0zIDMgMS4zNCAzIDMgM3oiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
         <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-white/5 to-transparent rounded-full" />
 
         <div className="relative z-10 max-w-md px-8 text-center">
@@ -90,6 +90,9 @@ function RegisterForm() {
               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">Full name</label>
               <input
                 id="name"
+                name="name"
+                autoComplete="name"
+                spellCheck={false}
                 type="text"
                 required
                 value={form.name}
@@ -103,6 +106,9 @@ function RegisterForm() {
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">Email address</label>
               <input
                 id="email"
+                name="email"
+                autoComplete="email"
+                spellCheck={false}
                 type="email"
                 required
                 value={form.email}
@@ -116,7 +122,9 @@ function RegisterForm() {
               <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">Password</label>
               <input
                 id="password"
+                name="password"
                 type="password"
+                autoComplete="new-password"
                 required
                 minLength={8}
                 value={form.password}

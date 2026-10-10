@@ -12,7 +12,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) rounded-[3px] border border-[#DFE1E6] bg-white py-(--card-spacing) text-sm text-[#172B4D] [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] dark:border-[#344563] dark:bg-[#253858] dark:text-white",
+        "group/card flex flex-col gap-(--card-spacing) rounded-xl border border-border bg-card py-(--card-spacing) text-sm text-foreground [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] dark:border-border dark:bg-card dark:text-foreground",
         className
       )}
       {...props} />
@@ -56,7 +56,7 @@ function CardDescription({
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-[#5E6C84]", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props} />
   );
 }
@@ -96,7 +96,7 @@ function CardFooter({
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center border-t border-[#DFE1E6] bg-[#F4F5F7] p-(--card-spacing) dark:border-[#344563] dark:bg-[#1A2A4A]",
+        "flex items-center border-t border-border bg-muted p-(--card-spacing) dark:border-border dark:bg-muted",
         className
       )}
       {...props} />

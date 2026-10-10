@@ -1,11 +1,21 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 
+export class ApiError extends Error {
+  constructor(message, code = 'ERROR', status = 0) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
 class ApiClient {
   constructor() {
     this.baseUrl = API_URL;
     this.token = null;
     this.refreshing = false;
     this.refreshQueue = [];
+    this.timeout = 30000;
   }
 
   setToken(token) {
@@ -45,45 +55,59 @@ class ApiClient {
       options.body = JSON.stringify(body);
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    options.signal = controller.signal;
+
     try {
       const res = await fetch(url, options);
 
       if (res.status === 401 && !isRetry) {
+        clearTimeout(timeoutId);
         if (!this.refreshing) {
           this.refreshing = true;
           try {
             await this.refreshToken();
             this.refreshing = false;
-            this.refreshQueue.forEach((cb) => cb());
+            const queue = this.refreshQueue;
             this.refreshQueue = [];
+            queue.forEach(({ resolve }) => resolve(this.request(method, path, body, true)));
             return this.request(method, path, body, true);
-          } catch {
+          } catch (err) {
             this.refreshing = false;
+            const queue = this.refreshQueue;
             this.refreshQueue = [];
+            queue.forEach(({ reject }) => reject(err));
             localStorage.removeItem('pp_token');
             this.token = null;
             window.location.href = '/auth/login';
             return { success: false, error: { code: 'AUTHENTICATION_ERROR', message: 'Session expired' } };
           }
         } else {
-          return new Promise((resolve) => {
-            this.refreshQueue.push(async () => {
-              const result = await this.request(method, path, body, true);
-              resolve(result);
-            });
+          return new Promise((resolve, reject) => {
+            this.refreshQueue.push({ resolve, reject });
           });
         }
       }
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        return { success: false, error: data.error || { code: 'ERROR', message: 'Request failed' } };
+        const err = data?.error || {};
+        throw new ApiError(
+          err.message || `Request failed (${res.status})`,
+          err.code || 'ERROR',
+          res.status
+        );
       }
 
       return data;
     } catch (err) {
-      return { success: false, error: { code: 'NETWORK_ERROR', message: err.message } };
+      clearTimeout(timeoutId);
+      if (err instanceof ApiError) throw err;
+      if (err?.name === 'AbortError') throw new ApiError('Request timed out', 'NETWORK_ERROR', 0);
+      throw new ApiError(err?.message || 'Network error', 'NETWORK_ERROR', 0);
     }
   }
 
@@ -109,3 +133,15 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+
+// Set the stored token synchronously at import time (before first render),
+// so first-render queries are already authenticated instead of 401ing and
+// retrying (which also tripped the rate limiter during boot storms).
+if (typeof window !== 'undefined') {
+  try {
+    const stored = window.localStorage.getItem('pp_token');
+    if (stored) api.setToken(stored);
+  } catch {
+    // storage unavailable (private mode) — requests go out unauthenticated
+  }
+}

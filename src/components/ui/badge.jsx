@@ -4,26 +4,26 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 font-semibold text-xs whitespace-nowrap transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold text-xs whitespace-nowrap transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
   {
     variants: {
       variant: {
         default:
-          "bg-secondary text-secondary-foreground",
+          "border-border/60 bg-secondary text-secondary-foreground",
         primary:
-          "bg-primary/10 text-primary",
+          "border-[#C9D8E4] bg-[#E2EAF1] text-[#38566E] dark:border-[#2A435C] dark:bg-[#1A2C3E] dark:text-[#9DBBD3]",
         success:
-          "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+          "border-[#C6D9CE] bg-[#E2ECE6] text-[#476E5C] dark:border-[#29463A] dark:bg-[#16271F] dark:text-[#8DB8A1]",
         warning:
-          "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+          "border-[#E0D5B8] bg-[#F0EBDC] text-[#7A6740] dark:border-[#4A4127] dark:bg-[#2B2718] dark:text-[#C2AE7E]",
         destructive:
-          "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+          "border-[#D9C6C6] bg-[#EDE3E3] text-[#8A5A5A] dark:border-[#4A3232] dark:bg-[#2B1D1D] dark:text-[#C49A9A]",
         info:
-          "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
+          "border-[#D3CFE2] bg-[#E9E7F0] text-[#5F5B7A] dark:border-[#3D3A57] dark:bg-[#252336] dark:text-[#AFA9CC]",
         outline:
-          "border border-border text-muted-foreground",
+          "border-border/60 bg-transparent text-muted-foreground",
         ghost:
-          "bg-transparent text-muted-foreground hover:bg-muted",
+          "border-transparent bg-transparent text-muted-foreground hover:bg-muted",
       },
       size: {
         default: "text-xs",

@@ -183,13 +183,13 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="rounded-[3px] border border-white/20 px-4 py-1.5 text-sm text-white hover:bg-white/10"
+            className="rounded-lg border border-white/20 px-4 py-1.5 text-sm text-white hover:bg-white/10"
           >
             Cancel
           </button>
           <button
             onClick={() => onSave(annotations)}
-            className="rounded-[3px] bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+            className="rounded-lg bg-primary hover:bg-primary/90"
           >
             Save Annotations
           </button>

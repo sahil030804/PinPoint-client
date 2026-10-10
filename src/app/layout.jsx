@@ -2,6 +2,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
+import { FeedbackWidget } from "@/components/common/FeedbackWidget";
 import "@/styles/globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,9 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: '/favicon.svg',
   },
 };
 
@@ -55,19 +59,7 @@ export default function RootLayout({ children }) {
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
-        <script dangerouslySetInnerHTML={{ __html: `
-window.PINPOINT_API_URL = "http://localhost:4000/v1";
-` }} />
-        <script src="/widget.js" />
-        <script dangerouslySetInnerHTML={{ __html: `
-Feedback.init({
-  projectId: "eadb9cdc-2f3c-4057-892f-50befdb085b8",
-  color: "#3B82F6",
-  position: "bottom-right",
-  buttonText: "Help",
-  icon: "chat"
-});
-` }} />
+        <FeedbackWidget />
       </body>
     </html>
   );

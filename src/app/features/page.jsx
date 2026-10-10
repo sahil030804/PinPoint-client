@@ -19,7 +19,7 @@ const FEATURES = [
         <div className="aspect-[4/3] rounded-xl bg-white dark:bg-gray-800 relative overflow-hidden">
           <div className="absolute inset-0 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-4 w-4 rounded bg-blue-600" />
+              <div className="h-4 w-4 rounded bg-primary" />
               <div className="h-2.5 w-20 rounded bg-gray-200 dark:bg-gray-700" />
               <div className="ml-auto flex gap-2">
                 <div className="h-2 w-10 rounded bg-gray-200 dark:bg-gray-700" />
@@ -36,7 +36,7 @@ const FEATURES = [
             </div>
             <div className="grid grid-cols-3 gap-3">
               {[0, 1, 2].map((i) => (
-                <div key={i} className={`rounded-lg border p-3 ${i === 1 ? 'border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 ring-2 ring-blue-500/20' : 'border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-800/50'}`}>
+                <div key={i} className={`rounded-lg border p-3 ${i === 1 ? 'border-primary/40 dark:border-primary/50 bg-primary/10/50 dark:bg-primary/10 ring-2 ring-primary/20' : 'border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-800/50'}`}>
                   <div className="h-2 w-full rounded bg-gray-200 dark:bg-gray-700 mb-2" />
                   <div className="h-2 w-3/4 rounded bg-gray-200 dark:bg-gray-700 mb-2" />
                   <div className="h-2 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
@@ -46,10 +46,10 @@ const FEATURES = [
           </div>
           <div className="absolute" style={{ top: '70px', left: 'calc(50% + 10px)' }}>
             <div className="flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white shadow-lg shadow-blue-500/40 ring-2 ring-white dark:ring-gray-800 z-10">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white shadow-lg shadow-primary/30 ring-2 ring-white dark:ring-gray-800 z-10">
                 1
               </div>
-              <div className="h-7 w-px bg-gradient-to-b from-blue-500/80 to-blue-400/60 dark:from-blue-400/80 dark:to-blue-500/40" />
+              <div className="h-7 w-px bg-gradient-to-b from-primary/80 to-primary/40 dark:from-primary/80 dark:to-primary/40" />
               <div className="relative -mt-px w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-xl">
                 <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-3 rotate-45 border-l border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" />
                 <p className="text-xs font-semibold text-gray-900 dark:text-white">John D.</p>
@@ -58,7 +58,7 @@ const FEATURES = [
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-[9px] font-medium text-gray-500 dark:text-gray-400">#ui</span>
-                  <span className="rounded bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 text-[9px] font-medium text-blue-600 dark:text-blue-400">medium</span>
+                  <span className="rounded bg-primary/10 dark:bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary dark:text-primary">medium</span>
                 </div>
               </div>
             </div>
@@ -74,7 +74,7 @@ const FEATURES = [
       'Every pin automatically captures a pixel-perfect snapshot of the viewport at that exact moment. Context is never lost.',
     visual: (
       <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-6 shadow-sm">
-        <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+        <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-[#2C4257] shadow-lg">
           <Camera size={56} className="text-white/90" />
         </div>
         <div className="mt-4 text-center">
@@ -95,31 +95,31 @@ const FEATURES = [
       <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-6 shadow-sm">
         <div className="overflow-hidden rounded-xl bg-gray-900 dark:bg-gray-950 shadow-lg">
           <div className="flex items-center gap-2 border-b border-gray-700/50 px-4 py-2">
-            <span className="h-3 w-3 rounded-full bg-red-500" />
-            <span className="h-3 w-3 rounded-full bg-yellow-500" />
+            <span className="h-3 w-3 rounded-full bg-[#9C6464]" />
+            <span className="h-3 w-3 rounded-full bg-[#A68F5E]" />
             <span className="h-3 w-3 rounded-full bg-green-500" />
             <span className="ml-2 text-xs text-gray-400">metadata.json</span>
           </div>
           <div className="p-4 font-mono text-xs leading-relaxed">
-            <div className="text-purple-400">{'{'}</div>
+            <div className="text-muted-foreground">{'{'}</div>
             <div className="ml-3">
-              <span className="text-blue-300">&quot;browser&quot;</span>
+              <span className="text-primary">&quot;browser&quot;</span>
               <span className="text-gray-400">: </span>
               <span className="text-green-300">&quot;Chrome 120&quot;</span>
               <span className="text-gray-400">,</span>
             </div>
             <div className="ml-3">
-              <span className="text-blue-300">&quot;os&quot;</span>
+              <span className="text-primary">&quot;os&quot;</span>
               <span className="text-gray-400">: </span>
               <span className="text-green-300">&quot;macOS Sonoma&quot;</span>
               <span className="text-gray-400">,</span>
             </div>
             <div className="ml-3">
-              <span className="text-blue-300">&quot;viewport&quot;</span>
+              <span className="text-primary">&quot;viewport&quot;</span>
               <span className="text-gray-400">: </span>
               <span className="text-green-300">&quot;1440x900&quot;</span>
             </div>
-            <div className="text-purple-400">{'}'}</div>
+            <div className="text-muted-foreground">{'}'}</div>
           </div>
         </div>
       </div>
@@ -134,7 +134,7 @@ const FEATURES = [
       <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-6 shadow-sm">
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/50 text-xs font-bold text-purple-600 dark:text-purple-400">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted dark:bg-muted text-xs font-bold text-muted-foreground">
               A
             </div>
             <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 px-4 py-2.5 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -143,11 +143,11 @@ const FEATURES = [
             </div>
           </div>
           <div className="flex items-start gap-3 justify-end">
-            <div className="rounded-2xl rounded-tr-sm bg-blue-50 dark:bg-blue-950/50 px-4 py-2.5 shadow-sm border border-blue-100 dark:border-blue-900/50">
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Sam</p>
+            <div className="rounded-2xl rounded-tr-sm bg-primary/10 dark:bg-primary/10 px-4 py-2.5 shadow-sm border border-blue-100 dark:border-blue-900/50">
+              <p className="text-xs font-semibold text-primary dark:text-primary">Sam</p>
               <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">Looks great, resolving.</p>
             </div>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 text-xs font-bold text-blue-600 dark:text-blue-400">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 text-xs font-bold text-primary dark:text-primary">
               S
             </div>
           </div>
@@ -164,9 +164,9 @@ const FEATURES = [
       <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-6 shadow-sm">
         <div className="flex items-center justify-center gap-5">
           {[
-            { label: 'Jira', color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400' },
-            { label: 'Linear', color: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' },
-            { label: 'Slack', color: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400' },
+            { label: 'Jira', color: 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' },
+            { label: 'Linear', color: 'bg-indigo-100 dark:bg-indigo-900/40 text-primary dark:text-primary' },
+            { label: 'Slack', color: 'bg-muted dark:bg-muted text-muted-foreground' },
             { label: 'GitHub', color: 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300' },
           ].map(({ label, color }) => (
             <div key={label} className="flex flex-col items-center gap-2">
@@ -202,7 +202,7 @@ function FeatureSection({ feature, index }) {
     >
       <div className={`mx-auto max-w-7xl px-6 grid items-center gap-12 lg:gap-20 ${isReversed ? 'lg:grid-flow-dense lg:grid-cols-2' : 'lg:grid-cols-2'}`}>
         <div className={isReversed ? 'lg:col-start-2' : ''}>
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mb-6">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary mb-6">
             <Icon size={24} />
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
@@ -241,7 +241,7 @@ export default function FeaturesPage() {
         >
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white tracking-tight leading-[1.1]">
             Feedback that speaks volumes,{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+            <span className="text-primary">
               without writing a word.
             </span>
           </h1>
@@ -259,7 +259,7 @@ export default function FeaturesPage() {
       </div>
 
       <section className="relative py-24 sm:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-[#344D65] to-[#2C4257]" />
         <div className="absolute top-0 left-1/3 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-6 text-center">
@@ -272,7 +272,7 @@ export default function FeaturesPage() {
           <div className="mt-8">
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-blue-700 hover:bg-blue-50 transition-all shadow-xl active:scale-[0.97]"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-primary hover:bg-primary/10 transition-all shadow-xl active:scale-[0.97]"
             >
               Start Free Trial
               <ArrowRight size={18} />

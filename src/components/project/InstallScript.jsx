@@ -1,9 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { WIDGET_VERSION, widgetUrl } from '@/lib/widget';
 
-const WIDGET_URL = process.env.NEXT_PUBLIC_WIDGET_URL || '/widget.js';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
+
+function escapeJs(str) {
+  return String(str).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+}
 
 function InstallScript({ projectId, widgetConfig = {} }) {
   const [copied, setCopied] = useState(false);
@@ -17,16 +21,16 @@ function InstallScript({ projectId, widgetConfig = {} }) {
   };
 
   const snippet = `<script>
-window.PINPOINT_API_URL = "${API_URL}";
+window.PINPOINT_API_URL = "${escapeJs(API_URL)}";
 </script>
-<script src="${WIDGET_URL}"></script>
+<script src="${escapeJs(widgetUrl())}"></script>
 <script>
   Feedback.init({
-    projectId: "${projectId}",
-    color: "${config.color}",
-    position: "${config.position}",
-    buttonText: "${config.buttonText}",
-    icon: "${config.icon}"
+    projectId: "${escapeJs(projectId)}",
+    color: "${escapeJs(config.color)}",
+    position: "${escapeJs(config.position)}",
+    buttonText: "${escapeJs(config.buttonText)}",
+    icon: "${escapeJs(config.icon)}"
   });
 </script>`;
 
@@ -54,20 +58,20 @@ window.PINPOINT_API_URL = "${API_URL}";
       </p>
 
       <div className="relative">
-        <pre className="overflow-x-auto rounded-[3px] border border-gray-200 bg-gray-50 p-4 text-sm dark:border-gray-700 dark:bg-gray-900">
+        <pre className="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm dark:border-gray-700 dark:bg-gray-900">
           <code className="text-gray-800 dark:text-gray-200">{snippet}</code>
         </pre>
         <button
           onClick={handleCopy}
-          className="absolute right-2 top-2 rounded-[3px] border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="absolute right-2 top-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         >
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
 
-      <div className="rounded-[3px] border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
-        <div className="relative mt-4 flex h-48 items-center justify-center rounded-[3px] border-2 border-dashed border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+        <div className="relative mt-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
           <p className="text-xs text-gray-400">Your website preview area</p>
           <button
             className="absolute flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white shadow-lg"

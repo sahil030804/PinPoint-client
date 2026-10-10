@@ -132,9 +132,20 @@ export default function SettingsPage() {
     });
   }
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+  function validateFileSize(file) {
+    if (file.size > MAX_FILE_SIZE) {
+      toastError('File size must be less than 5MB');
+      return false;
+    }
+    return true;
+  }
+
   async function handleAvatarChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!validateFileSize(file)) { e.target.value = ''; return; }
     const dataUrl = await fileToBase64(file);
     setAvatarPreview(dataUrl);
     setAvatarData(dataUrl);
@@ -144,6 +155,7 @@ export default function SettingsPage() {
   async function handleLogoChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!validateFileSize(file)) { e.target.value = ''; return; }
     const dataUrl = await fileToBase64(file);
     setLogoPreview(dataUrl);
     setLogoData(dataUrl);
