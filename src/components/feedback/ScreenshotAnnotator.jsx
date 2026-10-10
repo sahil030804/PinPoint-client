@@ -241,7 +241,7 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
           </button>
           <button
             onClick={() => onSave(annotations)}
-            className="rounded-lg bg-primary hover:bg-primary/90"
+            className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary/90 active:scale-95 transition-transform"
           >
             Save Annotations
           </button>
