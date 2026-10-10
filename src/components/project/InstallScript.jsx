@@ -16,7 +16,7 @@ function InstallScript({ projectId, widgetConfig = {} }) {
     color: '#3B82F6',
     position: 'bottom-right',
     buttonText: 'Feedback',
-    icon: 'chat',
+    icon: 'feedback',
     ...widgetConfig,
   };
 

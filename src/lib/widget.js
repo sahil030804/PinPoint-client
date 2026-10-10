@@ -5,6 +5,13 @@
 export const WIDGET_VERSION = '6';
 
 export function widgetUrl() {
-  const base = process.env.NEXT_PUBLIC_WIDGET_URL || '/widget.js';
+  // Prefer an explicit widget host; otherwise fall back to this app's own
+  // public origin so the embed snippet always points at an absolute URL
+  // (a relative "/widget.js" only works when the host site serves it, which
+  // it never does).
+  const site = process.env.NEXT_PUBLIC_SITE_URL;
+  const base =
+    process.env.NEXT_PUBLIC_WIDGET_URL ||
+    (site ? `${site.replace(/\/$/, '')}/widget.js` : '/widget.js');
   return `${base}?v=${WIDGET_VERSION}`;
 }

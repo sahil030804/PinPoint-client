@@ -20,7 +20,7 @@ function WidgetConfigForm({ website, onSave }) {
   const [color, setColor] = useState('#3B82F6');
   const [position, setPosition] = useState('bottom-right');
   const [buttonText, setButtonText] = useState('Feedback');
-  const [icon, setIcon] = useState('chat');
+  const [icon, setIcon] = useState('feedback');
   const [darkMode, setDarkMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,7 +33,7 @@ function WidgetConfigForm({ website, onSave }) {
       setColor(cfg.color || '#3B82F6');
       setPosition(cfg.position || 'bottom-right');
       setButtonText(cfg.buttonText || 'Feedback');
-      setIcon(cfg.icon || 'chat');
+      setIcon(cfg.icon || 'feedback');
       setDarkMode(cfg.darkMode || false);
       initialized.current = true;
     }
