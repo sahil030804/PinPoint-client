@@ -90,6 +90,9 @@ function RegisterForm() {
               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">Full name</label>
               <input
                 id="name"
+                name="name"
+                autoComplete="name"
+                spellCheck={false}
                 type="text"
                 required
                 value={form.name}
@@ -103,6 +106,9 @@ function RegisterForm() {
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">Email address</label>
               <input
                 id="email"
+                name="email"
+                autoComplete="email"
+                spellCheck={false}
                 type="email"
                 required
                 value={form.email}
@@ -116,7 +122,9 @@ function RegisterForm() {
               <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">Password</label>
               <input
                 id="password"
+                name="password"
                 type="password"
+                autoComplete="new-password"
                 required
                 minLength={8}
                 value={form.password}

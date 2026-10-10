@@ -114,6 +114,9 @@ export default function ForgotPasswordPage() {
               </label>
               <input
                 id="email"
+                name="email"
+                autoComplete="email"
+                spellCheck={false}
                 type="email"
                 required
                 value={email}

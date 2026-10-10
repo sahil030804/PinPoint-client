@@ -49,7 +49,7 @@ function ActivityItem({ activity }) {
         return `priority changed from ${activity.metadata?.from} → ${activity.metadata?.to}`;
       case 'comment_added': {
         const preview = activity.metadata?.preview || '';
-        return `commented: "${preview}${preview.length >= 50 ? '...' : ''}"`;
+        return `commented: "${preview}${preview.length >= 50 ? '…' : ''}"`;
       }
       case 'resolved':
         return 'resolved this issue';
@@ -68,7 +68,7 @@ function ActivityItem({ activity }) {
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-900 dark:text-white">
-            {activity.actor?.name || 'Someone'}
+            {activity.actor?.name || 'A visitor'}
           </span>
           <span className="text-xs text-gray-500">{formatRelativeTime(activity.createdAt)}</span>
         </div>

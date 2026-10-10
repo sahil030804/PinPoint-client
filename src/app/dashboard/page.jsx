@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
-import { useWorkspaceStats, useFeedbackTrends, useActivityFeed } from "@/hooks/useWorkspace";
+import { useAnalyticsOverview, useFeedbackTrends, useActivityFeed } from "@/hooks/useWorkspace";
+import { RadixSelect } from "@/components/common/RadixSelect";
 import {
   MessageSquare,
   AlertCircle,
@@ -11,8 +13,6 @@ import {
   CheckCircle2,
   TrendingUp,
   Calendar,
-  ChevronDown,
-  MoreHorizontal,
   UserCheck,
   UserPlus,
   ArrowRightLeft,
@@ -117,17 +117,29 @@ function StatCard({ label, value, icon: Icon, iconColor, trend }) {
   );
 }
 
+function trendPct(trends) {
+  if (!Array.isArray(trends) || trends.length < 2) return undefined;
+  const half = Math.floor(trends.length / 2);
+  const prev = trends.slice(0, half).reduce((s, d) => s + (d.count || 0), 0);
+  const recent = trends.slice(half).reduce((s, d) => s + (d.count || 0), 0);
+  if (prev === 0) return undefined;
+  return Math.round(((recent - prev) / prev) * 100);
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { data: stats, isLoading: statsLoading } = useWorkspaceStats(
+  const [range, setRange] = useState('30');
+  const { data: stats, isLoading: statsLoading } = useAnalyticsOverview(
     user?.workspaceId
   );
   const { data: trends = [], isLoading: trendsLoading } = useFeedbackTrends(
-    user?.workspaceId
+    user?.workspaceId,
+    range
   );
   const { data: activities = [], isLoading: activityLoading } = useActivityFeed(
     user?.workspaceId
   );
+  const totalTrend = trendPct(trends);
 
   return (
     <div className="p-6">
@@ -141,10 +153,19 @@ export default function DashboardPage() {
             Overview of your feedback metrics.
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm">
-          <Calendar size={16} className="text-muted-foreground" />
-          <span className="text-sm text-foreground">Last 30 days</span>
-          <ChevronDown size={16} className="text-muted-foreground" />
+        <div className="hidden sm:flex items-center gap-1 rounded-lg border border-border bg-card px-2 py-1 shadow-sm">
+          <Calendar size={16} className="ml-1 text-muted-foreground" />
+          <RadixSelect
+            variant="ghost"
+            value={range}
+            onChange={setRange}
+            options={[
+              { value: '7', label: 'Last 7 days' },
+              { value: '30', label: 'Last 30 days' },
+              { value: '90', label: 'Last 90 days' },
+            ]}
+            triggerClassName="border-0 shadow-none text-sm text-foreground"
+          />
         </div>
       </div>
 
@@ -154,7 +175,7 @@ export default function DashboardPage() {
           label="Total Feedback"
           value={stats?.totalFeedback}
           icon={MessageSquare}
-          trend={12}
+          trend={totalTrend}
         />
         <StatCard
           label="Open"
@@ -173,7 +194,6 @@ export default function DashboardPage() {
           value={stats?.resolved}
           icon={CheckCircle2}
           iconColor="text-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-          trend={5}
         />
       </div>
 
@@ -185,9 +205,6 @@ export default function DashboardPage() {
             <h3 className="text-base font-semibold text-foreground">
               Feedback Volume
             </h3>
-            <button className="rounded-lg p-1 text-muted-foreground hover:text-foreground transition-colors">
-              <MoreHorizontal size={18} />
-            </button>
           </div>
           <div className="p-5">
             {trendsLoading ? (
@@ -256,13 +273,13 @@ export default function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm leading-snug text-foreground">
                         <span className="font-semibold">
-                          {activity.actor_name || "Someone"}
+                          {activity.actor_name || "A visitor"}
                         </span>{" "}
                         {label}
                         {(activity.action === "assigned" || activity.action === "unassigned") && " "}
                         {activity.action === "assigned" && (
                           <span className="font-medium">
-                            {activity.metadata?.assigneeName || activity.assignee_name || "someone"}
+                            {activity.metadata?.assigneeName || activity.assignee_name || "a team member"}
                           </span>
                         )}
                         {activity.feedback_id && (

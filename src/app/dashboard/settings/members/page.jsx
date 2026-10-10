@@ -182,10 +182,12 @@ export default function MembersPage() {
                         <td className="px-4 py-3.5 text-right">
                           {canManageMembers && member.role !== 'owner' && (
                             <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none" aria-label="Member actions" type="button">
-                                  <MoreVertical size={16} />
-                                </button>
+                              <DropdownMenuTrigger
+                                className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none"
+                                aria-label="Member actions"
+                                type="button"
+                              >
+                                <MoreVertical size={16} />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="min-w-[200px] p-2">
                                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>

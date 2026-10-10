@@ -6,11 +6,11 @@ import Link from 'next/link';
 import { useAuth } from '@/providers/AuthProvider';
 import { useWorkspaceFeedback, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { FeedbackTable } from '@/components/feedback/FeedbackTable';
+import { EmptyState } from '@/components/common/EmptyState';
 import { STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/components/feedback/FeedbackInlineField';
 import { useToast } from '@/providers/ToastProvider';
 import {
   Download,
-  Plus,
   Search,
   Filter,
   Flag,
@@ -42,7 +42,18 @@ export default function InboxPage() {
     priority: filters.priority === 'all' ? '' : filters.priority,
   };
 
-  const { data, isLoading } = useWorkspaceFeedback(user?.workspaceId, apiFilters);
+  const { data, isLoading, error, refetch } = useWorkspaceFeedback(user?.workspaceId, apiFilters);
+
+  const hasActiveFilters =
+    filters.status !== 'all' ||
+    filters.priority !== 'all' ||
+    filters.project !== 'all' ||
+    search.trim() !== '';
+
+  function clearFilters() {
+    setFilters({ status: 'all', priority: 'all', project: 'all', page: 1 });
+    setSearchInput('');
+  }
 
   const feedback = data?.data || [];
   const pagination = data?.pagination;
@@ -102,7 +113,9 @@ export default function InboxPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+            disabled={totalItems === 0}
+            title={totalItems === 0 ? 'No feedback to export' : 'Export filtered feedback as CSV'}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download size={16} className="text-muted-foreground" />
             Export CSV
@@ -111,8 +124,8 @@ export default function InboxPage() {
             href="/dashboard/projects"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:brightness-110"
           >
-            <Plus size={16} />
-            New Item
+            <Folder size={16} />
+            Manage Projects
           </Link>
         </div>
       </div>
@@ -155,13 +168,13 @@ export default function InboxPage() {
           <Search size={16} className="text-muted-foreground shrink-0" />
           <input
             type="text"
-            placeholder="Search feedback..."
+            placeholder="Search feedback…"
             value={searchInput}
             onChange={(e) => {
               setSearchInput(e.target.value);
               setFilters((prev) => ({ ...prev, page: 1 }));
             }}
-            className="block w-full border-0 bg-transparent py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
+            className="block w-full rounded-md border-0 bg-transparent py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary/40"
           />
         </div>
       </div>
@@ -171,6 +184,8 @@ export default function InboxPage() {
         <FeedbackTable
           feedback={feedback}
           loading={isLoading}
+          error={error}
+          onRetry={() => refetch()}
           pagination={pagination}
           onPageChange={handlePageChange}
           onRowClick={(item) => {
@@ -180,6 +195,35 @@ export default function InboxPage() {
           members={members}
           showProject={true}
           compact={true}
+          emptyState={
+            hasActiveFilters ? (
+              <EmptyState
+                title="No matching feedback"
+                description="No items match your current filters."
+                action={
+                  <button
+                    onClick={clearFilters}
+                    className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+                  >
+                    Clear filters
+                  </button>
+                }
+              />
+            ) : (
+              <EmptyState
+                title="No feedback yet"
+                description="Install the widget on your website to start collecting visual feedback."
+                action={
+                  <Link
+                    href="/dashboard/projects"
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:brightness-110"
+                  >
+                    Go to Projects
+                  </Link>
+                }
+              />
+            )
+          }
         />
       </div>
 

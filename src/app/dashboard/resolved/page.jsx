@@ -11,7 +11,7 @@ export default function ResolvedPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
-  const { data, isLoading } = useWorkspaceFeedback(user?.workspaceId, { status: 'done,closed' });
+  const { data, isLoading, error, refetch } = useWorkspaceFeedback(user?.workspaceId, { status: 'done,closed' });
 
   const feedback = data?.data || [];
   const pagination = data?.pagination;
@@ -23,6 +23,8 @@ export default function ResolvedPage() {
         <FeedbackTable
           feedback={feedback}
           loading={isLoading}
+          error={error}
+          onRetry={() => refetch()}
           pagination={pagination}
           onRowClick={(item) => {
             const projectId = item.Website?.Project?.id;

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Settings, Users, Bell, X, ChevronDown, LogOut, Moon, Sun, Menu } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
+import { useToast } from '@/providers/ToastProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useInvitations, useAcceptInvitation, useRejectInvitation } from '@/hooks/useWorkspace';
@@ -67,6 +68,7 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const { user, loading, workspaces, activeWorkspaceId, switchWorkspace, logout, refreshWorkspaces } = useAuth();
   const { dark, toggleTheme } = useTheme();
+  const { error: toastError } = useToast();
   const { onActivity } = useWebSocket();
   const queryClient = useQueryClient();
   const { data: pendingInvitations = [] } = useInvitations();
@@ -103,6 +105,13 @@ export default function DashboardLayout({ children }) {
       router.replace('/auth/setup-workspace');
     }
   }, [loading, user, activeWorkspaceId, router, pathname]);
+
+  // Hide the dogfood feedback button while the mobile drawer is open
+  // (the widget floats above everything by design).
+  useEffect(() => {
+    document.body.classList.toggle('pp-drawer-open', sidebarOpen);
+    return () => document.body.classList.remove('pp-drawer-open');
+  }, [sidebarOpen]);
 
   useEffect(() => {
     if (user) {
@@ -165,6 +174,7 @@ export default function DashboardLayout({ children }) {
               onClick={toggleTheme}
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               title={dark ? 'Light mode' : 'Dark mode'}
+              aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
@@ -245,6 +255,7 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center gap-1 mt-1 px-1">
             <Link
               href="/dashboard/inbox"
+              aria-label={unreadCount > 0 ? `Inbox, ${unreadCount} unread notifications` : 'Inbox'}
               className="relative flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <Bell size={14} />
@@ -362,6 +373,12 @@ export default function DashboardLayout({ children }) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden lg:ml-64">
+        <a
+          href="#dashboard-main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:text-primary-foreground"
+        >
+          Skip to content
+        </a>
         {/* Top bar */}
         <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-5">
           <div className="flex items-center gap-3">
@@ -375,12 +392,13 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard/inbox"
+              aria-label={unreadCount > 0 ? `Inbox, ${unreadCount} unread notifications` : 'Inbox'}
               className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted transition-colors lg:hidden"
             >
               <Bell size={18} />
               {unreadCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
             </Link>
@@ -388,13 +406,14 @@ export default function DashboardLayout({ children }) {
               onClick={toggleTheme}
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted transition-colors hidden lg:flex"
               title={dark ? 'Light mode' : 'Dark mode'}
+              aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {dark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
+        <main id="dashboard-main" tabIndex="-1" className="flex-1 overflow-y-auto">
           {/* Invitation banner */}
           {pendingInvitations.filter((inv) => !dismissedInvites.has(inv.id)).length > 0 && (
             <div className="border-b border-primary/20 bg-primary/5 px-4 sm:px-5 py-3">
@@ -406,9 +425,13 @@ export default function DashboardLayout({ children }) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={async () => {
-                        await acceptInvite.mutateAsync(inv.id);
-                        refreshWorkspaces();
-                        setDismissedInvites((prev) => new Set(prev).add(inv.id));
+                        try {
+                          await acceptInvite.mutateAsync(inv.id);
+                          refreshWorkspaces();
+                          setDismissedInvites((prev) => new Set(prev).add(inv.id));
+                        } catch (err) {
+                          toastError(err.message || 'Failed to accept invitation');
+                        }
                       }}
                       disabled={acceptInvite.isPending}
                       className="saas-btn-primary disabled:opacity-50 h-8 text-xs"
@@ -417,8 +440,12 @@ export default function DashboardLayout({ children }) {
                     </button>
                     <button
                       onClick={async () => {
-                        await rejectInvite.mutateAsync(inv.id);
-                        setDismissedInvites((prev) => new Set(prev).add(inv.id));
+                        try {
+                          await rejectInvite.mutateAsync(inv.id);
+                          setDismissedInvites((prev) => new Set(prev).add(inv.id));
+                        } catch (err) {
+                          toastError(err.message || 'Failed to decline invitation');
+                        }
                       }}
                       disabled={rejectInvite.isPending}
                       className="saas-btn-secondary disabled:opacity-50 h-8 text-xs"

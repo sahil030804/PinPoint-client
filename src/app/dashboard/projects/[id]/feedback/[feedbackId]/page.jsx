@@ -4,6 +4,15 @@ import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { useToast } from '@/providers/ToastProvider';
+import { useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import dynamic from 'next/dynamic';
 import { useFeedback, useComments, useAddComment, useFeedbackTimeline } from '@/hooks/useFeedback';
 import { useUpdateFeedback } from '@/hooks/useFeedback';
@@ -18,7 +27,6 @@ import {
   Share2,
   MoreVertical,
   Send,
-  Paperclip,
   MessageSquare,
   Link as LinkIcon,
   Monitor,
@@ -52,7 +60,7 @@ function ScreenshotViewer({ screenshot, annotations }) {
               <div
                 key={ann.id || i}
                 className="absolute pointer-events-auto cursor-pointer"
-                style={{ left: `${ann.x}%`, top: `${ann.y}%` }}
+                style={{ left: `${ann.x * 100}%`, top: `${ann.y * 100}%`, transform: 'translate(-50%, -50%)' }}
                 onClick={() => setOpen(true)}
               >
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-lg ring-2 ring-white dark:ring-gray-900">
@@ -79,6 +87,7 @@ export default function FeedbackDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user, workspaceRole } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const canAssign = ['owner', 'admin', 'developer'].includes(workspaceRole);
   const canEdit = workspaceRole !== 'client' && workspaceRole !== 'viewer';
   const canAnnotate = ['owner', 'admin', 'developer'].includes(workspaceRole);
@@ -87,16 +96,44 @@ export default function FeedbackDetailPage() {
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
   const addComment = useAddComment();
   const updateFeedback = useUpdateFeedback();
+  const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [editing, setEditing] = useState(false);
   const [editStatus, setEditStatus] = useState('');
   const [editPriority, setEditPriority] = useState('');
   const [editAssignee, setEditAssignee] = useState('');
   const [annotatorOpen, setAnnotatorOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  async function handleShare() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toastSuccess('Link copied to clipboard');
+    } catch {
+      toastError('Could not copy link');
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await api.del(`/feedback/${params.feedbackId}`);
+      queryClient.invalidateQueries({ queryKey: ['feedback'] });
+      toastSuccess('Feedback deleted');
+      router.push(`/dashboard/projects/${params.id}`);
+    } catch (err) {
+      toastError(err.message || 'Failed to delete feedback');
+      setShowDeleteConfirm(false);
+    }
+  }
 
   async function handleSaveAnnotations(annotations) {
-    await updateFeedback.mutateAsync({ id: params.feedbackId, annotations });
-    setAnnotatorOpen(false);
+    try {
+      await updateFeedback.mutateAsync({ id: params.feedbackId, annotations });
+      setAnnotatorOpen(false);
+      toastSuccess('Annotations saved');
+    } catch (err) {
+      toastError(err.message || 'Failed to save annotations');
+    }
   }
 
   function startEditing() {
@@ -115,7 +152,13 @@ export default function FeedbackDetailPage() {
       updates.assigneeId = editAssignee || null;
     }
     if (Object.keys(updates).length > 0) {
-      await updateFeedback.mutateAsync({ id: params.feedbackId, ...updates });
+      try {
+        await updateFeedback.mutateAsync({ id: params.feedbackId, ...updates });
+        toastSuccess('Feedback updated');
+      } catch (err) {
+        toastError(err.message || 'Failed to update feedback');
+        return;
+      }
     }
     setEditing(false);
   }
@@ -123,8 +166,12 @@ export default function FeedbackDetailPage() {
   async function handleAddComment(e) {
     e.preventDefault();
     if (!newComment.trim()) return;
-    await addComment.mutateAsync({ feedbackId: params.feedbackId, body: newComment });
-    setNewComment('');
+    try {
+      await addComment.mutateAsync({ feedbackId: params.feedbackId, body: newComment });
+      setNewComment('');
+    } catch (err) {
+      toastError(err.message || 'Failed to post comment');
+    }
   }
 
   if (isLoading) {
@@ -173,7 +220,7 @@ export default function FeedbackDetailPage() {
               href={`/dashboard/projects/${params.id}`}
               className="hover:text-gray-700 dark:hover:text-gray-300"
             >
-              {feedback.project?.name || `Project`}
+              {feedback.Website?.Project?.name || 'Project'}
             </NextLink>
             <span>/</span>
             <span className="text-gray-900 dark:text-white font-medium">
@@ -182,18 +229,61 @@ export default function FeedbackDetailPage() {
           </nav>
         </div>
         <div className="flex items-center gap-1">
-          <button className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
             <Share2 size={15} />
             Share
           </button>
-          <button className="rounded-[3px] p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">
-            <MoreVertical size={16} />
-          </button>
+          <DropdownMenu
+            onOpenChange={(open) => { if (!open) setShowDeleteConfirm(false); }}
+          >
+            <DropdownMenuTrigger
+              className="rounded-[3px] p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              aria-label="Feedback actions"
+            >
+              <MoreVertical size={16} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {!showDeleteConfirm ? (
+                <>
+                  <DropdownMenuItem onClick={handleShare}>
+                    Copy link
+                  </DropdownMenuItem>
+                  {canAssign && (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      closeOnClick={false}
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      Delete feedback
+                    </DropdownMenuItem>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                    Delete this feedback permanently?
+                  </div>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={handleDelete}
+                  >
+                    Yes, delete
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowDeleteConfirm(false)}>
+                    Cancel
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {/* Main 2-column layout */}
-      <div className="p-6 grid gap-8 lg:grid-cols-[2fr_1fr]">
+      <div className="p-6 grid gap-8 lg:grid-cols-[2fr_minmax(0,1fr)]">
         {/* LEFT: Main content */}
         <div className="space-y-8">
           {/* Reported Screenshot */}
@@ -210,7 +300,14 @@ export default function FeedbackDetailPage() {
               )}
             </div>
             <div className="p-6">
-              <ScreenshotViewer screenshot={feedback.screenshot} annotations={feedback.annotations} />
+              {feedback.screenshot ? (
+                <ScreenshotViewer screenshot={feedback.screenshot} annotations={feedback.annotations} />
+              ) : (
+                <div className="flex flex-col items-center gap-2 rounded-[3px] border border-dashed border-gray-300 py-10 text-center dark:border-gray-700">
+                  <Monitor size={20} className="text-gray-400" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No screenshot was captured for this feedback.</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -256,7 +353,7 @@ export default function FeedbackDetailPage() {
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
                         {comment.body}
                       </p>
                     </div>
@@ -282,15 +379,9 @@ export default function FeedbackDetailPage() {
                     }}
                     rows={1}
                     className="block w-full resize-none rounded-[3px] border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
-                    placeholder="Add a comment..."
+                    placeholder="Add a comment…"
                   />
-                  <div className="mt-2 flex items-center justify-between">
-                    <button
-                      type="button"
-                      className="rounded-[3px] p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                      <Paperclip size={16} />
-                    </button>
+                  <div className="mt-2 flex items-center justify-end">
                     <button
                       type="submit"
                       disabled={!newComment.trim() || addComment.isPending}
@@ -310,7 +401,7 @@ export default function FeedbackDetailPage() {
         <div className="space-y-6">
           {/* Title + Reporter */}
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{feedback.title || 'Untitled Feedback'}</h1>
+            <h1 className="text-xl font-bold text-gray-900 break-words dark:text-white">{feedback.title || 'Untitled Feedback'}</h1>
             <p className="mt-1 text-sm text-gray-500">
               Reported by {reporterName}
             </p>

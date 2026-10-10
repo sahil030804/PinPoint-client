@@ -45,6 +45,7 @@ export function useWorkspaceFeedback(workspaceId, filters = {}) {
   if (filters.projectId) params.set('projectId', filters.projectId);
   if (filters.page) params.set('page', filters.page);
   if (filters.limit) params.set('limit', filters.limit);
+  if (filters.search) params.set('search', filters.search);
   const query = params.toString();
 
   return useQuery({
@@ -126,10 +127,20 @@ export function useActivityFeed(workspaceId) {
   });
 }
 
-export function useFeedbackTrends(workspaceId) {
+export function useAnalyticsOverview(workspaceId) {
   return useQuery({
-    queryKey: ['trends', workspaceId],
-    queryFn: () => api.get(`/analytics/trends/${workspaceId}?days=30`),
+    queryKey: ['analytics', 'overview', workspaceId],
+    queryFn: () => api.get(`/analytics/overview/${workspaceId}`),
+    staleTime: 30_000,
+    select: (res) => res.data,
+    enabled: !!workspaceId,
+  });
+}
+
+export function useFeedbackTrends(workspaceId, days = 30) {
+  return useQuery({
+    queryKey: ['trends', workspaceId, days],
+    queryFn: () => api.get(`/analytics/trends/${workspaceId}?days=${days}`),
     staleTime: 60_000,
     select: (res) => res.data,
     enabled: !!workspaceId,
@@ -173,6 +184,10 @@ export function useAcceptInvitation() {
       queryClient.invalidateQueries({ queryKey: ['invitations'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
     },
+    onError: (err) => {
+      // surfaced by callers via try/catch; kept for logging parity
+      console.error('[invitations] accept failed:', err?.message);
+    },
   });
 }
 
@@ -181,6 +196,9 @@ export function useRejectInvitation() {
   return useMutation({
     mutationFn: (id) => api.post(`/workspaces/invitations/${id}/reject`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['invitations'] }),
+    onError: (err) => {
+      console.error('[invitations] reject failed:', err?.message);
+    },
   });
 }
 

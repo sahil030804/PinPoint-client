@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { WIDGET_VERSION, widgetUrl } from '@/lib/widget';
 
-const WIDGET_URL = process.env.NEXT_PUBLIC_WIDGET_URL || '/widget.js';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 
 function escapeJs(str) {
@@ -23,7 +23,7 @@ function InstallScript({ projectId, widgetConfig = {} }) {
   const snippet = `<script>
 window.PINPOINT_API_URL = "${escapeJs(API_URL)}";
 </script>
-<script src="${escapeJs(WIDGET_URL)}"></script>
+<script src="${escapeJs(widgetUrl())}"></script>
 <script>
   Feedback.init({
     projectId: "${escapeJs(projectId)}",

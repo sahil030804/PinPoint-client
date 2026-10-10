@@ -5,7 +5,7 @@ import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 export function ToastContainer({ toasts, removeToast }) {
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2">
+    <div className="pointer-events-none fixed bottom-4 left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2" role="status" aria-live="polite">
       <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div
@@ -13,7 +13,7 @@ export function ToastContainer({ toasts, removeToast }) {
             layout
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 100, transition: { duration: 0.2 } }}
+            exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className={`pointer-events-auto flex items-center gap-2 rounded-[3px] px-3 py-2 text-sm font-medium shadow-[0_4px_12px_rgba(9,30,66,0.25)] ${
               toast.type === 'success'
@@ -26,13 +26,13 @@ export function ToastContainer({ toasts, removeToast }) {
             }`}
           >
             {toast.type === 'success' ? (
-              <CheckCircle size={16} className="shrink-0" />
+              <CheckCircle size={16} className="shrink-0" aria-hidden="true" />
             ) : toast.type === 'error' ? (
-              <AlertCircle size={16} className="shrink-0" />
+              <AlertCircle size={16} className="shrink-0" aria-hidden="true" />
             ) : toast.type === 'warning' ? (
-              <AlertTriangle size={16} className="shrink-0" />
+              <AlertTriangle size={16} className="shrink-0" aria-hidden="true" />
             ) : (
-              <Info size={16} className="shrink-0" />
+              <Info size={16} className="shrink-0" aria-hidden="true" />
             )}
             <span>{toast.message}</span>
             <button

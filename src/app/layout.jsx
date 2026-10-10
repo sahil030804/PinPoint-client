@@ -2,6 +2,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
+import { FeedbackWidget } from "@/components/common/FeedbackWidget";
 import "@/styles/globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,9 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: '/favicon.svg',
   },
 };
 
@@ -55,6 +59,7 @@ export default function RootLayout({ children }) {
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
+        <FeedbackWidget />
       </body>
     </html>
   );

@@ -72,6 +72,40 @@ function StatusPill({ status }) {
   );
 }
 
+
+function MemberMenuItems({ item, confirmRemoveId, onRoleChange, onRemove, onRequestRemove, onCancelRemove }) {
+  if (confirmRemoveId === item.User?.id) {
+    return (
+      <>
+        <div className="px-2 py-1.5 text-xs text-muted-foreground">
+          Remove {item.User?.name || 'this member'}?
+        </div>
+        <DropdownMenuItem variant="destructive" onClick={() => onRemove(item.User?.id)}>
+          Yes, remove
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onCancelRemove}>
+          Cancel
+        </DropdownMenuItem>
+      </>
+    );
+  }
+  return (
+    <>
+      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>
+      {['admin', 'developer', 'viewer', 'client'].map((r) => (
+        <DropdownMenuItem key={r} onClick={() => onRoleChange(item.User?.id, r)} className={item.role === r ? 'bg-primary/10' : ''}>
+          <span className={`h-2 w-2 rounded-full shrink-0 ${item.role === r ? 'bg-primary' : 'bg-transparent'}`} />
+          <span className={item.role === r ? '' : 'ml-[10px]'}>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
+        </DropdownMenuItem>
+      ))}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem variant="destructive" closeOnClick={false} onClick={() => onRequestRemove(item.User?.id)}>
+        Remove member
+      </DropdownMenuItem>
+    </>
+  );
+}
+
 export default function MembersPage() {
   const { user, workspaceRole, refreshWorkspaceRole } = useAuth();
   const { data: members = [], isLoading } = useWorkspaceMembers(user?.workspaceId);
@@ -84,6 +118,7 @@ export default function MembersPage() {
   const canManageMembers = ['owner', 'admin'].includes(workspaceRole);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('viewer');
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
   const { error: toastError, success: toastSuccess } = useToast();
 
   const filteredMembers = useMemo(() => {
@@ -108,14 +143,18 @@ export default function MembersPage() {
 
   async function handleInvite(e) {
     e.preventDefault();
-    const res = await inviteMember.mutateAsync({ workspaceId: user?.workspaceId, email, role });
-    if (!res.success) {
-      toastError(res.error?.message || 'Failed to invite member');
-    } else {
-      toastSuccess('Invitation sent');
-      setShowInvite(false);
-      setEmail('');
-      setRole('viewer');
+    try {
+      const res = await inviteMember.mutateAsync({ workspaceId: user?.workspaceId, email, role });
+      if (!res.success) {
+        toastError(res.error?.message || 'Failed to invite member');
+      } else {
+        toastSuccess('Invitation sent');
+        setShowInvite(false);
+        setEmail('');
+        setRole('viewer');
+      }
+    } catch (err) {
+      toastError(err.message || 'Failed to invite member');
     }
   }
 
@@ -133,6 +172,7 @@ export default function MembersPage() {
   async function handleRemove(memberId) {
     try {
       await removeMember.mutateAsync({ workspaceId: user?.workspaceId, userId: memberId });
+      setConfirmRemoveId(null);
     } catch (err) {
       toastError(err.message || 'Failed to remove member');
     }
@@ -224,7 +264,7 @@ export default function MembersPage() {
                 type="checkbox"
                 checked={activeOnly}
                 onChange={(e) => setActiveOnly(e.target.checked)}
-                className="rounded border-border text-primary focus:ring-primary/30 h-4 w-4"
+                className="rounded border-border text-primary focus:ring-primary/30 h-4 w-4 accent-blue-600 cursor-pointer"
               />
               <span className="text-sm text-foreground">Active Only</span>
             </label>
@@ -306,23 +346,22 @@ export default function MembersPage() {
                       <td className="jira-table-cell text-right">
                         {canManageMembers && item.role !== 'owner' && (
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none" aria-label="Member actions" type="button">
-                                <MoreVertical size={16} />
-                              </button>
+                            <DropdownMenuTrigger
+                              className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none"
+                              aria-label="Member actions"
+                              type="button"
+                            >
+                              <MoreVertical size={16} />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="min-w-[200px] p-2">
-                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>
-                              {['admin', 'developer', 'viewer', 'client'].map((r) => (
-                                <DropdownMenuItem key={r} onClick={() => handleRoleChange(item.User?.id, r)} className={item.role === r ? 'bg-primary/10' : ''}>
-                                  <span className={`h-2 w-2 rounded-full shrink-0 ${item.role === r ? 'bg-primary' : 'bg-transparent'}`} />
-                                  <span className={item.role === r ? '' : 'ml-[10px]'}>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
-                                </DropdownMenuItem>
-                              ))}
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem variant="destructive" onClick={() => handleRemove(item.User?.id)}>
-                                Remove member
-                              </DropdownMenuItem>
+                              <MemberMenuItems
+                                item={item}
+                                confirmRemoveId={confirmRemoveId}
+                                onRoleChange={handleRoleChange}
+                                onRemove={handleRemove}
+                                onRequestRemove={setConfirmRemoveId}
+                                onCancelRemove={() => setConfirmRemoveId(null)}
+                              />
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
@@ -352,23 +391,22 @@ export default function MembersPage() {
                     </div>
                     {canManageMembers && item.role !== 'owner' && (
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none" aria-label="Member actions" type="button">
-                            <MoreVertical size={16} />
-                          </button>
+                        <DropdownMenuTrigger
+                          className="rounded-lg p-2 sm:p-1.5 text-muted-foreground hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer touch-manipulation w-8 h-8 flex items-center justify-center bg-transparent border-none"
+                          aria-label="Member actions"
+                          type="button"
+                        >
+                          <MoreVertical size={16} />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-[200px] p-2">
-                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>
-                          {['admin', 'developer', 'viewer', 'client'].map((r) => (
-                            <DropdownMenuItem key={r} onClick={() => handleRoleChange(item.User?.id, r)} className={item.role === r ? 'bg-primary/10' : ''}>
-                              <span className={`h-2 w-2 rounded-full shrink-0 ${item.role === r ? 'bg-primary' : 'bg-transparent'}`} />
-                              <span className={item.role === r ? '' : 'ml-[10px]'}>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
-                            </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem variant="destructive" onClick={() => handleRemove(item.User?.id)}>
-                            Remove member
-                          </DropdownMenuItem>
+                              <MemberMenuItems
+                                item={item}
+                                confirmRemoveId={confirmRemoveId}
+                                onRoleChange={handleRoleChange}
+                                onRemove={handleRemove}
+                                onRequestRemove={setConfirmRemoveId}
+                                onCancelRemove={() => setConfirmRemoveId(null)}
+                              />
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}

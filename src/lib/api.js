@@ -1,5 +1,14 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 
+export class ApiError extends Error {
+  constructor(message, code = 'ERROR', status = 0) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
 class ApiClient {
   constructor() {
     this.baseUrl = API_URL;
@@ -82,16 +91,23 @@ class ApiClient {
       }
 
       clearTimeout(timeoutId);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        return { success: false, error: data.error || { code: 'ERROR', message: 'Request failed' } };
+        const err = data?.error || {};
+        throw new ApiError(
+          err.message || `Request failed (${res.status})`,
+          err.code || 'ERROR',
+          res.status
+        );
       }
 
       return data;
     } catch (err) {
       clearTimeout(timeoutId);
-      return { success: false, error: { code: 'NETWORK_ERROR', message: err.message } };
+      if (err instanceof ApiError) throw err;
+      if (err?.name === 'AbortError') throw new ApiError('Request timed out', 'NETWORK_ERROR', 0);
+      throw new ApiError(err?.message || 'Network error', 'NETWORK_ERROR', 0);
     }
   }
 
@@ -117,3 +133,15 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+
+// Set the stored token synchronously at import time (before first render),
+// so first-render queries are already authenticated instead of 401ing and
+// retrying (which also tripped the rate limiter during boot storms).
+if (typeof window !== 'undefined') {
+  try {
+    const stored = window.localStorage.getItem('pp_token');
+    if (stored) api.setToken(stored);
+  } catch {
+    // storage unavailable (private mode) — requests go out unauthenticated
+  }
+}

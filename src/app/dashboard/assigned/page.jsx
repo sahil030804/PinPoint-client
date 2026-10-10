@@ -11,7 +11,7 @@ export default function AssignedPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
-  const { data, isLoading } = useWorkspaceFeedback(user?.workspaceId, { assigneeId: user?.id });
+  const { data, isLoading, error, refetch } = useWorkspaceFeedback(user?.workspaceId, { assigneeId: user?.id });
 
   const feedback = data?.data || [];
   const pagination = data?.pagination;
@@ -23,6 +23,8 @@ export default function AssignedPage() {
         <FeedbackTable
           feedback={feedback}
           loading={isLoading}
+          error={error}
+          onRetry={() => refetch()}
           pagination={pagination}
           onRowClick={(item) => {
             const projectId = item.Website?.Project?.id;

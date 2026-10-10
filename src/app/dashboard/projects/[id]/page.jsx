@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { useToast } from '@/providers/ToastProvider';
 import dynamic from 'next/dynamic';
-import { useProjects, useWebsites, useCreateWebsite, useWorkspaceFeedback } from '@/hooks/useWorkspace';
+import { useProjects, useWebsites, useCreateWebsite, useWorkspaceFeedback, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { PageHeader } from '@/components/common/PageHeader';
 import { FeedbackTable } from '@/components/feedback/FeedbackTable';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -19,10 +20,12 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { error: toastError } = useToast();
   const queryClient = useQueryClient();
   const { data: projects = [] } = useProjects(user?.workspaceId);
   const project = projects.find((p) => p.id === params.id);
   const { data: websites = [], isLoading: websitesLoading } = useWebsites(params.id);
+  const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
 
   const [showAddWebsite, setShowAddWebsite] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
@@ -43,10 +46,14 @@ export default function ProjectDetailPage() {
   async function handleAddWebsite(e) {
     e.preventDefault();
     if (!websiteUrl.trim()) return;
-    const res = await addWebsite.mutateAsync({ projectId: params.id, url: websiteUrl });
-    if (res.success) {
-      setShowAddWebsite(false);
-      setWebsiteUrl('');
+    try {
+      const res = await addWebsite.mutateAsync({ projectId: params.id, url: websiteUrl });
+      if (res.success) {
+        setShowAddWebsite(false);
+        setWebsiteUrl('');
+      }
+    } catch (err) {
+      toastError(err.message || 'Failed to add website');
     }
   }
 
@@ -58,7 +65,11 @@ export default function ProjectDetailPage() {
   });
 
   async function handleSaveWidgetConfig(websiteId, data) {
-    await updateWebsiteMutation.mutateAsync({ websiteId, ...data });
+    try {
+      await updateWebsiteMutation.mutateAsync({ websiteId, ...data });
+    } catch (err) {
+      toastError(err.message || 'Failed to save widget settings');
+    }
   }
 
   if (!project) {
@@ -159,7 +170,7 @@ export default function ProjectDetailPage() {
             pagination={pagination}
             onPageChange={setFeedbackPage}
             onRowClick={(item) => router.push(`/dashboard/projects/${params.id}/feedback/${item.id}`)}
-            members={[]}
+            members={members}
             showProject={false}
             compact={true}
             emptyState={

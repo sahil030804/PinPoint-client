@@ -48,7 +48,12 @@ function StatusDot({ value }) {
 function PriorityIcon({ value }) {
   const cfg = PRIORITY_ICON[value] || PRIORITY_ICON.medium;
   const Icon = cfg.icon;
-  return <Icon size={14} className={cn('shrink-0', cfg.color)} />;
+  const label = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' }[value] || value;
+  return (
+    <span title={`Priority: ${label}`} aria-label={`Priority: ${label}`} className="inline-flex">
+      <Icon size={14} className={cn('shrink-0', cfg.color)} />
+    </span>
+  );
 }
 
 function AssigneeAvatar({ assignee, size = 'sm' }) {
@@ -78,6 +83,8 @@ function AssigneeAvatar({ assignee, size = 'sm' }) {
 export function FeedbackTable({
   feedback = [],
   loading = false,
+  error = null,
+  onRetry,
   pagination,
   onPageChange,
   onRowClick,
@@ -123,6 +130,7 @@ export function FeedbackTable({
         <FeedbackInlineField
           feedbackId={item.id}
           field="status"
+          label="Change status"
           value={item.status}
           options={STATUS_OPTIONS}
           renderDisplay={(v) => <StatusDot value={v} />}
@@ -138,6 +146,7 @@ export function FeedbackTable({
         <FeedbackInlineField
           feedbackId={item.id}
           field="priority"
+          label="Change priority"
           value={item.priority}
           options={PRIORITY_OPTIONS}
           renderDisplay={(v) => <PriorityIcon value={v} />}
@@ -153,6 +162,7 @@ export function FeedbackTable({
         <FeedbackInlineField
           feedbackId={item.id}
           field="assigneeId"
+          label="Change assignee"
           value={item.assignee?.id || ''}
           options={memberOptions}
           renderDisplay={(v) => {
@@ -214,6 +224,8 @@ export function FeedbackTable({
       columns={columns}
       data={feedback}
       loading={loading}
+      error={error}
+      onRetry={onRetry}
       pagination={pagination}
       onPageChange={onPageChange}
       onRowClick={onRowClick}

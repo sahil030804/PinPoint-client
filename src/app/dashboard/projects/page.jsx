@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { useToast } from '@/providers/ToastProvider';
 import { useProjects, useCreateProject } from '@/hooks/useWorkspace';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -31,6 +32,7 @@ function getAvatarColor(name, color) {
 
 export default function ProjectsPage() {
   const { user } = useAuth();
+  const { error: toastError } = useToast();
   const router = useRouter();
   const { data: projects = [], isLoading } = useProjects(user?.workspaceId);
   const createProject = useCreateProject();
@@ -50,7 +52,7 @@ export default function ProjectsPage() {
         router.push(`/dashboard/projects/${res.data.id}`);
       }
     } catch (err) {
-      console.error('Failed to create project:', err);
+      toastError(err.message || 'Failed to create project');
     }
   }
 
@@ -104,10 +106,13 @@ export default function ProjectsPage() {
             <p className="mt-1 text-sm text-muted-foreground">Add a new project to start collecting feedback.</p>
             <form onSubmit={handleCreate} className="mt-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Project Name</label>
+                <label htmlFor="project-name" className="block text-sm font-medium text-foreground mb-1.5">Project Name</label>
                 <input
+                  id="project-name"
+                  name="project-name"
                   type="text"
                   required
+                  autoComplete="off"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="saas-input"
@@ -115,8 +120,10 @@ export default function ProjectsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Description (optional)</label>
+                <label htmlFor="project-description" className="block text-sm font-medium text-foreground mb-1.5">Description (optional)</label>
                 <textarea
+                  id="project-description"
+                  name="project-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}

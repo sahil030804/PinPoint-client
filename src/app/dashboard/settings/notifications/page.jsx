@@ -109,7 +109,7 @@ export default function NotificationsPage() {
                   )} />
                   <div className="flex-1 min-w-0">
                     <p className={cn(
-                      'text-sm',
+                      'text-sm break-words',
                       n.read ? 'text-muted-foreground' : 'font-medium text-foreground'
                     )}>
                       {n.title}

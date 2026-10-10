@@ -3,7 +3,7 @@
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
-  critical: { label: 'Highest', icon: ArrowUp, class: 'text-red-500' },
+  critical: { label: 'Critical', icon: ArrowUp, class: 'text-red-500' },
   high: { label: 'High', icon: ArrowUp, class: 'text-orange-500' },
   medium: { label: 'Medium', icon: Minus, class: 'text-yellow-500' },
   low: { label: 'Low', icon: ArrowDown, class: 'text-emerald-500' },

@@ -43,9 +43,18 @@ export function useUpdateFeedback() {
       const previousWebsiteLists = queryClient.getQueriesData({ queryKey: ['feedback', 'website'] });
       const previousWorkspaceLists = queryClient.getQueriesData({ queryKey: ['feedback', 'workspace'] });
 
+      // NOTE: `useFeedback` applies `select: (res) => res.data`, so the cached
+      // value is the raw axios response `{ data, ... }` and `select` reads
+      // `res.data`. The optimistic patch MUST be merged INTO `old.data` (not
+      // spread at the top level), otherwise the new status/priority/annotations
+      // never reach the observer and the detail page won't reflect them until the
+      // refetch on `onSettled` — e.g. saved annotation markers don't render.
       queryClient.setQueryData(['feedback', id], (old) => ({
         ...old,
-        ...data,
+        data: {
+          ...(old && old.data ? old.data : {}),
+          ...data,
+        },
       }));
 
       for (const [listKey] of previousWebsiteLists) {

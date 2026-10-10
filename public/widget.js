@@ -4,9 +4,10 @@
   /* ─── Config & State ─── */
   var CONFIG = {};
   var API_BASE = window.PINPOINT_API_URL || 'http://localhost:4000/v1';
-  var state = 'idle'; // idle | capturing | form | annotating
+  var state = 'idle'; // idle | selecting | capturing | form | annotating
   var screenshotData = null;
   var annotationsArr = [];
+  var selectedSpot = null; // pin location from region select {x,y} fractions of full page
   var selectedColor = '#FF4444';
   var displayW = 0;
   var displayH = 0;
@@ -15,6 +16,10 @@
   var consoleErrors = [];
   var overlayEl = null;
   var modalEl = null;
+  var selectorEl = null;
+  var selectorBox = null;
+  var selStart = null;
+  var selCur = null;
   var annotatingEl = null;
   var labelPopupEl = null;
   var toastEl = null;
@@ -63,7 +68,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
         consoleErrors.push({ message: msg, time: new Date().toISOString() });
         if (consoleErrors.length > 20) consoleErrors.shift();
       } catch (_) {}
-      return origError.apply(console, arguments);
+      return origConsoleError.apply(console, arguments);
     };
     window.addEventListener('error', function (e) {
       consoleErrors.push({ message: e.message + ' at ' + (e.filename || '') + ':' + (e.lineno || ''), time: new Date().toISOString() });
@@ -74,6 +79,9 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
   /* ─── Keyboard Shortcuts ─── */
   function bindGlobalKeys() {
     document.addEventListener('keydown', function (e) {
+      if (state === 'selecting') {
+        if (e.key === 'Escape') { cancelSelector(); return; }
+      }
       if (state === 'form') {
         if (e.key === 'Escape') { cancelForm(); return; }
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -104,10 +112,28 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
   }
 
   function takeScreenshot() {
+    // Never capture our own UI (toast/button) in the screenshot.
+    function excludeWidget(node) {
+      return !(node.classList && node.classList.contains('pp-widget'));
+    }
     return new Promise(function (resolve) {
       function doCapture() {
         if (window.htmlToImage) {
-          window.htmlToImage.toPng(document.body, { quality: 0.7, pixelRatio: 1.0 })
+          // Explicit dimensions: measure the full document ourselves instead of
+          // relying on the library's node measuring (flex h-screen app shells
+          // otherwise risk viewport-sized or offset captures).
+          var docEl = document.documentElement;
+          var fullW = Math.max(docEl.scrollWidth, window.innerWidth);
+          var fullH = Math.max(docEl.scrollHeight, window.innerHeight);
+          window.htmlToImage.toPng(document.body, {
+            filter: excludeWidget,
+            pixelRatio: 1.0,
+            cacheBust: true,
+            width: fullW,
+            height: fullH,
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+          })
             .then(function (dataUrl) { resolve(dataUrl); })
             .catch(function () { resolve(null); });
         } else { resolve(null); }
@@ -132,6 +158,17 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '.pp-widget-btn { position: fixed; z-index: 2147483645; display: flex; align-items: center; gap: 8px; padding: 12px 20px; border: none; border-radius: 9999px; cursor: pointer; font-size: 14px; font-weight: 600; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.18); transition: transform 0.2s cubic-bezier(.4,0,.2,1), box-shadow 0.2s; letter-spacing: 0.01em; }',
       '.pp-widget-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.24); }',
       '.pp-widget-btn:active { transform: scale(0.97); }',
+      '@media (max-width: 640px) { .pp-widget-btn { padding: 12px; } .pp-widget-btn span { display: none; } }',
+
+      '/* Region Selector */',
+      '.pp-select-overlay { position: fixed; inset: 0; z-index: 2147483646; cursor: crosshair; user-select: none; -webkit-user-select: none; touch-action: none; }',
+      '.pp-select-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 9999px; background: rgba(17,24,39,0.92); color: #fff; font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.35); white-space: nowrap; cursor: default; }',
+      '.pp-select-full { padding: 6px 14px; border-radius: 9999px; border: none; font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; background: ' + CONFIG.color + '; }',
+      '.pp-select-full:hover { opacity: 0.9; }',
+      '.pp-select-close { width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); color: #fff; cursor: pointer; font-size: 12px; line-height: 1; }',
+      '.pp-select-close:hover { background: rgba(255,255,255,0.3); }',
+      '.pp-select-box { position: fixed; z-index: 2; border: 2px dashed ' + CONFIG.color + '; background: rgba(255,255,255,0.06); box-shadow: 0 0 0 9999px rgba(0,0,0,0.35); pointer-events: none; }',
+      '.pp-select-dims { position: absolute; top: -28px; left: 0; padding: 3px 8px; border-radius: 6px; background: rgba(17,24,39,0.92); color: #fff; font-size: 11px; font-weight: 600; white-space: nowrap; }',
 
       '/* Overlay */',
       '.pp-widget-overlay { position: fixed; inset: 0; z-index: 2147483646; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; animation: ppFadeIn 0.2s ease; }',
@@ -146,7 +183,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '/* Screenshot Preview */',
       '.pp-screenshot-preview { margin: 16px 24px 0; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; transition: border-color 0.15s; }',
       '.pp-screenshot-preview:hover { border-color: #93c5fd; }',
-      '.pp-screenshot-preview img { display: block; width: 100%; max-height: 180px; object-fit: cover; object-position: top; }',
+      '.pp-screenshot-preview img { display: block; width: 100%; max-height: 220px; object-fit: contain; object-position: top; background: #f3f4f6; }',
       '.pp-screenshot-preview .pp-annotate-badge { position: absolute; bottom: 8px; right: 8px; padding: 5px 10px; border-radius: 6px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 500; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 4px; pointer-events: none; }',
       '.pp-screenshot-preview .pp-no-screenshot { padding: 32px; text-align: center; color: #9ca3af; font-size: 13px; }',
 
@@ -165,11 +202,15 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '.pp-pills { display: flex; gap: 6px; flex-wrap: wrap; }',
       '.pp-pill { padding: 6px 12px; border-radius: 8px; border: 1.5px solid #e5e7eb; background: #fff; font-size: 12px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; user-select: none; }',
       '.pp-pill:hover { border-color: #d1d5db; background: #f9fafb; }',
-      '.pp-pill.active { border-color: ' + CONFIG.color + '; background: ' + CONFIG.color + '10; color: ' + CONFIG.color + '; font-weight: 600; }',
+      '.pp-pill.active { border: 2px solid ' + CONFIG.color + '; background: ' + CONFIG.color + '20; color: ' + CONFIG.color + '; font-weight: 700; }',
+      '.pp-pill.active::after { content: "\u2713"; margin-left: 5px; font-size: 14px; line-height: 1; opacity: 0.95; }',
       '.pp-pill.active-bug { border-color: #ef4444; background: #fef2f2; color: #ef4444; }',
       '.pp-pill.active-feature { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; }',
       '.pp-pill.active-improvement { border-color: #f59e0b; background: #fffbeb; color: #f59e0b; }',
       '.pp-pill.active-general { border-color: #6b7280; background: #f9fafb; color: #6b7280; }',
+      '.pp-pill.active-low { border-color: #16a34a; background: #dcfce7; color: #16a34a; }',
+      '.pp-pill.active-medium { border-color: #ca8a04; background: #fef9c4; color: #ca8a04; }',
+      '.pp-pill.active-high { border-color: #dc2626; background: #fee2e2; color: #dc2626; }',
 
       '/* Submit Area */',
       '.pp-submit-area { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 8px; }',
@@ -232,6 +273,15 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '.pp-dark .pp-form-group input::placeholder, .pp-dark .pp-form-group textarea::placeholder { color: #6b7280; }',
       '.pp-dark .pp-pill { border-color: #4b5563; background: #374151; color: #9ca3af; }',
       '.pp-dark .pp-pill:hover { background: #4b5563; }',
+      '.pp-dark .pp-pill.active { border: 2px solid ' + CONFIG.color + '; background: ' + CONFIG.color + '40; color: #fff; font-weight: 700; }',
+      '.pp-dark .pp-pill.active::after { content: "\u2713"; margin-left: 5px; font-size: 14px; line-height: 1; opacity: 0.95; }',
+      '.pp-dark .pp-pill.active-bug { border-color: #ef4444; background: rgba(239,68,68,0.25); color: #fca5a5; }',
+      '.pp-dark .pp-pill.active-feature { border-color: #3b82f6; background: rgba(59,130,246,0.25); color: #93c5fd; }',
+      '.pp-dark .pp-pill.active-improvement { border-color: #f59e0b; background: rgba(245,158,11,0.25); color: #fcd34d; }',
+      '.pp-dark .pp-pill.active-general { border-color: #9ca3af; background: rgba(156,163,175,0.25); color: #e5e7eb; }',
+      '.pp-dark .pp-pill.active-low { border-color: #4ade80; background: rgba(22,163,74,0.3); color: #4ade80; }',
+      '.pp-dark .pp-pill.active-medium { border-color: #facc15; background: rgba(202,138,4,0.3); color: #facc15; }',
+      '.pp-dark .pp-pill.active-high { border-color: #f87171; background: rgba(220,38,38,0.3); color: #f87171; }',
       '.pp-dark .pp-cancel-btn:hover { background: #374151; color: #d1d5db; }',
       '.pp-dark .pp-screenshot-preview { border-color: #4b5563; background: #374151; }',
       '.pp-dark .pp-shortcut-hint kbd { border-color: #4b5563; background: #374151; color: #9ca3af; }',
@@ -241,6 +291,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '@keyframes ppFadeUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }',
       '@keyframes ppScaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }',
       '@keyframes ppPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+      '@media (prefers-reduced-motion: reduce) { .pp-widget *, .pp-widget *::before, .pp-widget *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }',
     ].join('\n');
     document.head.appendChild(css);
   }
@@ -270,30 +321,163 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     }
   }
 
-  /* ─── Step 1: Instant Screenshot ─── */
+  /* ─── Step 1: Region Select (no auto screenshot) ─── */
   function startCapture() {
     if (state !== 'idle') return;
-    state = 'capturing';
+    state = 'selecting';
+    selectedSpot = null;
     buttonEl.style.display = 'none';
+    showRegionSelector();
+  }
 
-    // Show capturing indicator
+  function showRegionSelector() {
+    cleanupSelector();
+
+    selectorEl = document.createElement('div');
+    selectorEl.className = 'pp-widget pp-select-overlay';
+    selectorEl.innerHTML = [
+      '<div class="pp-select-hint">',
+      '  <span>Drag to select an area to capture</span>',
+      '  <button class="pp-select-full" id="pp-select-full">Capture full page</button>',
+      '  <button class="pp-select-close" id="pp-select-close">✕</button>',
+      '</div>',
+      '<div class="pp-select-box" id="pp-select-box" style="display:none">',
+      '  <div class="pp-select-dims" id="pp-select-dims">0 × 0</div>',
+      '</div>',
+    ].join('');
+    document.body.appendChild(selectorEl);
+
+    document.getElementById('pp-select-full').addEventListener('click', function (e) {
+      e.stopPropagation();
+      captureSelected(null);
+    });
+    document.getElementById('pp-select-close').addEventListener('click', function (e) {
+      e.stopPropagation();
+      cancelSelector();
+    });
+
+    selectorEl.addEventListener('mousedown', onSelectMouseDown);
+    document.addEventListener('mousemove', onSelectMouseMove);
+    document.addEventListener('mouseup', onSelectMouseUp);
+  }
+
+  function cleanupSelector() {
+    document.removeEventListener('mousemove', onSelectMouseMove);
+    document.removeEventListener('mouseup', onSelectMouseUp);
+    if (selectorEl) { selectorEl.remove(); selectorEl = null; }
+    selectorBox = null;
+    selStart = null;
+    selCur = null;
+  }
+
+  function cancelSelector() {
+    cleanupSelector();
+    resetToIdle();
+  }
+
+  function onSelectMouseDown(e) {
+    if (e.button !== 0) return;
+    if (e.target.closest && e.target.closest('.pp-select-hint')) return;
+    e.preventDefault();
+    selStart = { x: e.clientX, y: e.clientY };
+    selectorBox = document.getElementById('pp-select-box');
+  }
+
+  function onSelectMouseMove(e) {
+    if (!selStart || !selectorBox) return;
+    var x = Math.max(0, Math.min(selStart.x, e.clientX));
+    var y = Math.max(0, Math.min(selStart.y, e.clientY));
+    var w = Math.min(Math.abs(e.clientX - selStart.x), window.innerWidth - x);
+    var h = Math.min(Math.abs(e.clientY - selStart.y), window.innerHeight - y);
+    selectorBox.style.display = 'block';
+    selectorBox.style.left = x + 'px';
+    selectorBox.style.top = y + 'px';
+    selectorBox.style.width = w + 'px';
+    selectorBox.style.height = h + 'px';
+    var dims = document.getElementById('pp-select-dims');
+    if (dims) dims.textContent = Math.round(w) + ' × ' + Math.round(h);
+    selCur = { x: x, y: y, w: w, h: h };
+  }
+
+  function onSelectMouseUp() {
+    if (!selStart) return;
+    var r = selCur;
+    selStart = null;
+    selCur = null;
+    if (!r || r.w < 10 || r.h < 10) {
+      if (selectorBox) selectorBox.style.display = 'none';
+      return;
+    }
+    captureSelected(r);
+  }
+
+  function captureSelected(region) {
+    // region: {x,y,w,h} in viewport px, or null for full page
+    cleanupSelector();
+    state = 'capturing';
+
     var indicator = document.createElement('div');
     indicator.className = 'pp-widget pp-toast pp-toast-success';
     indicator.id = 'pp-capturing-indicator';
-    indicator.innerHTML = '📸 Capturing...';
+    indicator.innerHTML = '📸 Capturing selected area...';
     indicator.style.background = CONFIG.color;
     document.body.appendChild(indicator);
 
     takeScreenshot().then(function (dataUrl) {
       var ind = document.getElementById('pp-capturing-indicator');
       if (ind) ind.remove();
-      screenshotData = dataUrl;
       state = 'idle';
-      if (screenshotData) {
-        showAnnotator();
-      } else {
-        showForm();
+      // Measure scroll/layout AFTER capture: the page may have scrolled
+      // while capturing, and the crop must match the captured pixels.
+      var scrollX = window.scrollX || window.pageXOffset || 0;
+      var scrollY = window.scrollY || window.pageYOffset || 0;
+      var docEl = document.documentElement;
+      var fullW = Math.max(docEl.scrollWidth, window.innerWidth);
+      var fullH = Math.max(docEl.scrollHeight, window.innerHeight);
+      if (region) {
+        selectedSpot = {
+          x: Math.round(((region.x + scrollX + region.w / 2) / fullW) * 10000) / 10000,
+          y: Math.round(((region.y + scrollY + region.h / 2) / fullH) * 10000) / 10000,
+        };
       }
+      if (!dataUrl) {
+        screenshotData = null;
+        showForm();
+        return;
+      }
+      if (!region) {
+        screenshotData = dataUrl;
+        showForm();
+        return;
+      }
+      cropToRegion(dataUrl, region, scrollX, scrollY, fullW, fullH).then(function (cropped) {
+        screenshotData = cropped || dataUrl;
+        showForm();
+      });
+    });
+  }
+
+  function cropToRegion(dataUrl, region, scrollX, scrollY, fullW, fullH) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var kx = img.naturalWidth / fullW;
+          var ky = img.naturalHeight / fullH;
+          var sx = Math.max(0, Math.round((region.x + scrollX) * kx));
+          var sy = Math.max(0, Math.round((region.y + scrollY) * ky));
+          var sw = Math.min(Math.round(region.w * kx), img.naturalWidth - sx);
+          var sh = Math.min(Math.round(region.h * ky), img.naturalHeight - sy);
+          if (sw < 2 || sh < 2) { resolve(null); return; }
+          var c = document.createElement('canvas');
+          c.width = sw;
+          c.height = sh;
+          c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+          resolve(c.toDataURL('image/png'));
+        } catch (err) { resolve(null); }
+      };
+      img.onerror = function () { resolve(null); };
+      img.src = dataUrl;
     });
   }
 
@@ -330,7 +514,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     modalEl.innerHTML = [
       '<div class="pp-modal-header">',
       '  <h3>Send Feedback</h3>',
-      '  <button class="pp-modal-close" id="pp-modal-close">✕</button>',
+      '  <button class="pp-modal-close" id="pp-modal-close" aria-label="Close feedback form">✕</button>',
       '</div>',
       screenshotHtml,
       '<div class="pp-modal-body">',
@@ -354,7 +538,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '      <label>Priority</label>',
       '      <div class="pp-pills" id="pp-priority-pills">',
       '        <div class="pp-pill" data-value="low">🟢 Low</div>',
-      '        <div class="pp-pill active" data-value="medium">🟡 Medium</div>',
+      '        <div class="pp-pill active active-medium" data-value="medium">🟡 Medium</div>',
       '        <div class="pp-pill" data-value="high">🔴 High</div>',
       '      </div>',
       '    </div>',
@@ -398,6 +582,8 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     setupPills('pp-category-pills', 'bug');
     // Priority pills
     setupPills('pp-priority-pills', 'medium');
+    // Pins for any annotations marked earlier (reopened form)
+    renderPreviewPins();
   }
 
   function setupPills(containerId, defaultVal) {
@@ -406,12 +592,10 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     var pills = container.querySelectorAll('.pp-pill');
     pills.forEach(function (pill) {
       pill.addEventListener('click', function () {
-        pills.forEach(function (p) { p.classList.remove('active', 'active-bug', 'active-feature', 'active-improvement', 'active-general'); });
+        pills.forEach(function (p) { p.classList.remove('active', 'active-bug', 'active-feature', 'active-improvement', 'active-general', 'active-low', 'active-medium', 'active-high'); });
         pill.classList.add('active');
         var val = pill.getAttribute('data-value');
-        if (containerId === 'pp-category-pills') {
-          pill.classList.add('active-' + val);
-        }
+        pill.classList.add('active-' + val);
         // Store selection
         container.setAttribute('data-selected', val);
       });
@@ -438,13 +622,15 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     state = 'idle';
     screenshotData = null;
     annotationsArr = [];
+    selectedSpot = null;
     if (buttonEl) buttonEl.style.display = 'flex';
   }
 
   /* ─── Step 3: Annotations ─── */
   function showAnnotator() {
     state = 'annotating';
-    annotationsArr = [];
+    // NOTE: annotationsArr is intentionally kept — reopening from the form
+    // must show (and preserve) already-marked areas, not wipe them.
     activeDrawing = null;
     displayW = 0;
     displayH = 0;
@@ -462,8 +648,8 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '</div>',
       '<div class="pp-annotate-body" id="pp-annotate-body">',
       '  <div class="pp-annotate-image-wrap" id="pp-annotate-wrap">',
-      '    <img id="pp-annotate-img" src="' + screenshotData + '" alt="Screenshot" />',
-      '    <div id="pp-annotate-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);color:#fff;font-size:16px;font-weight:500;pointer-events:none;">Loading screenshot...</div>',
+      '    <img id="pp-annotate-img" src="' + screenshotData + '" alt="Screenshot" draggable="false" style="user-select:none;-webkit-user-select:none;-webkit-user-drag:none;visibility:hidden;" />',
+      '    <div id="pp-annotate-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);color:#fff;font-size:16px;font-weight:500;">Loading screenshot...</div>',
       '    <svg class="pp-annotate-svg" id="pp-annotate-svg"></svg>',
       '  </div>',
       '</div>',
@@ -505,31 +691,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       var naturalH = img.naturalHeight;
       if (!naturalW || !naturalH) return;
 
-      // Calculate display size to fit viewport
-      var bodyEl = document.getElementById('pp-annotate-body');
-      if (!bodyEl) return;
-      var bodyRect = bodyEl.getBoundingClientRect();
-      var maxW = bodyRect.width * 0.95;
-      var maxH = bodyRect.height * 0.95;
-      var scale = Math.min(maxW / naturalW, maxH / naturalH, 1);
-      displayW = Math.round(naturalW * scale);
-      displayH = Math.round(naturalH * scale);
-
-      // Set explicit dimensions on img (override CSS max-width/object-fit)
-      img.style.maxWidth = 'none';
-      img.style.maxHeight = 'none';
-      img.style.objectFit = 'none';
-      img.style.width = displayW + 'px';
-      img.style.height = displayH + 'px';
-
-      // Match SVG to img
-      var svg = document.getElementById('pp-annotate-svg');
-      if (svg) {
-        svg.setAttribute('width', displayW);
-        svg.setAttribute('height', displayH);
-        svg.style.width = displayW + 'px';
-        svg.style.height = displayH + 'px';
-      }
+      applyAnnotatorLayout(naturalW, naturalH);
 
       // Remove loading overlay
       var loading = document.getElementById('pp-annotate-loading');
@@ -546,6 +708,8 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       }
       document.addEventListener('mousemove', onAnnotateMouseMove);
       document.addEventListener('mouseup', onAnnotateMouseUp);
+      // Re-fit if the viewport changes while annotating (devtools, zoom, resize)
+      window.addEventListener('resize', onAnnotateResize);
     }
 
     var img = document.getElementById('pp-annotate-img');
@@ -569,18 +733,122 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     });
   }
 
+  // Fit + clamp the screenshot inside the visible body. The clamp is a hard
+  // guarantee: the image element can never exceed the body, so the top (or
+  // any edge) can never be cropped regardless of measuring quirks or zoom.
+  function applyAnnotatorLayout(naturalW, naturalH) {
+    var bodyEl = document.getElementById('pp-annotate-body');
+    var img = document.getElementById('pp-annotate-img');
+    var svg = document.getElementById('pp-annotate-svg');
+    if (!bodyEl || !img || !naturalW || !naturalH) return;
+    var bodyRect = bodyEl.getBoundingClientRect();
+    if (bodyRect.width < 10 || bodyRect.height < 10) return;
+    var maxW = Math.floor(bodyRect.width * 0.95);
+    var maxH = Math.floor(bodyRect.height * 0.95);
+    var scale = Math.min(maxW / naturalW, maxH / naturalH, 1);
+    displayW = Math.max(1, Math.round(naturalW * scale));
+    displayH = Math.max(1, Math.round(naturalH * scale));
+    if (displayW > maxW) {
+      displayW = maxW;
+      displayH = Math.max(1, Math.round(displayW * naturalH / naturalW));
+    }
+    if (displayH > maxH) {
+      displayH = maxH;
+      displayW = Math.max(1, Math.round(displayH * naturalW / naturalH));
+    }
+
+    // Set explicit dimensions on img (override CSS max-width/object-fit)
+    img.style.maxWidth = 'none';
+    img.style.maxHeight = 'none';
+    img.style.objectFit = 'contain';
+    img.style.width = displayW + 'px';
+    img.style.height = displayH + 'px';
+    img.style.visibility = 'visible';
+
+    // Match SVG to img
+    if (svg) {
+      svg.setAttribute('width', displayW);
+      svg.setAttribute('height', displayH);
+      svg.style.width = displayW + 'px';
+      svg.style.height = displayH + 'px';
+    }
+
+    renderAnnotations();
+  }
+
+  function onAnnotateResize() {
+    var img = document.getElementById('pp-annotate-img');
+    if (!img || !img.naturalWidth || !img.naturalHeight) return;
+    if (!document.getElementById('pp-annotate-body')) return;
+    applyAnnotatorLayout(img.naturalWidth, img.naturalHeight);
+  }
+
   function backToForm() {
     cleanupAnnotator();
     if (modalEl) {
       modalEl.style.display = '';
       state = 'form';
+      refreshFormAnnotations();
     } else {
       showForm();
     }
   }
 
+  function refreshFormAnnotations() {
+    if (!modalEl) return;
+    var badge = modalEl.querySelector('.pp-annotate-badge');
+    if (badge) {
+      badge.textContent = annotationsArr.length > 0
+        ? '✏️ ' + annotationsArr.length + ' annotation' + (annotationsArr.length !== 1 ? 's' : '') + ' — click to edit'
+        : '✏️ Annotate';
+    }
+    renderPreviewPins();
+  }
+
+  function renderPreviewPins() {
+    if (!modalEl || !screenshotData) return;
+    var preview = modalEl.querySelector('.pp-screenshot-preview');
+    if (!preview) return;
+    var old = preview.querySelector('.pp-preview-pins');
+    if (old) old.remove();
+    if (!annotationsArr.length) return;
+    var img = preview.querySelector('img');
+    if (!img) return;
+    function draw() {
+      var natW = img.naturalWidth, natH = img.naturalHeight;
+      if (!natW || !natH) return;
+      var r = img.getBoundingClientRect();
+      var pr = preview.getBoundingClientRect();
+      var scale = Math.min(r.width / natW, r.height / natH);
+      var cw = natW * scale, ch = natH * scale;
+      var ox = (r.left - pr.left) + (r.width - cw) / 2;
+      var oy = (r.top - pr.top) + (r.height - ch) / 2;
+      var layer = document.createElement('div');
+      layer.className = 'pp-widget pp-preview-pins';
+      layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
+      annotationsArr.forEach(function (a, i) {
+        var col = a.color || '#FF4444';
+        var d = document.createElement('div');
+        d.style.cssText = 'position:absolute;left:' + (ox + a.x * cw) + 'px;top:' + (oy + a.y * ch) + 'px;' +
+          'width:' + Math.max(8, a.width * cw) + 'px;height:' + Math.max(8, a.height * ch) + 'px;' +
+          'border:2px solid ' + col + ';border-radius:4px;background:' + col + '22;box-sizing:border-box;';
+        var n = document.createElement('span');
+        n.textContent = String(i + 1);
+        n.style.cssText = 'position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:' + col + ';color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;';
+        d.appendChild(n);
+        layer.appendChild(d);
+      });
+      var prev = preview.querySelector('.pp-preview-pins');
+      if (prev) prev.remove();
+      preview.appendChild(layer);
+    }
+    if (img.complete && img.naturalWidth) { draw(); }
+    else { img.addEventListener('load', draw, { once: true }); }
+  }
+
   function cleanupAnnotator() {
     closeLabelPopup();
+    window.removeEventListener('resize', onAnnotateResize);
     if (annotateBodyEl) { annotateBodyEl.removeEventListener('mousedown', onAnnotateMouseDown); annotateBodyEl = null; }
     if (annotatingEl) { annotatingEl.remove(); annotatingEl = null; }
     document.removeEventListener('mousemove', onAnnotateMouseMove);
@@ -596,6 +864,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
   }
 
   function onAnnotateMouseDown(e) {
+    e.preventDefault();
     e.stopPropagation();
     closeLabelPopup();
 
@@ -827,6 +1096,21 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       priority: getSelectedPillValue('pp-priority-pills') || 'medium',
       consoleErrors: consoleErrors.length > 0 ? consoleErrors.slice(-10) : undefined,
     };
+    // Pin location = selected capture area (set at region-select time).
+    // Falls back to first annotation center, then viewport center, so
+    // duplicate detection always has a real point.
+    if (selectedSpot) {
+      body.coordinates = { x: selectedSpot.x, y: selectedSpot.y, element: '' };
+    } else if (annotationsArr.length > 0) {
+      var first = annotationsArr[0];
+      body.coordinates = {
+        x: Math.round((first.x + first.width / 2) * 10000) / 10000,
+        y: Math.round((first.y + first.height / 2) * 10000) / 10000,
+        element: (first.label || '').slice(0, 200),
+      };
+    } else if (screenshotData) {
+      body.coordinates = { x: 0.5, y: 0.5, element: '' };
+    }
     if (name) body.reporterName = name;
     if (email) body.reporterEmail = email;
     if (screenshotData) body.screenshot = screenshotData;
@@ -925,5 +1209,5 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  window.Feedback = { init: init };
+  window.Feedback = { init: init, version: '6' };
 })();

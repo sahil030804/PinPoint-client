@@ -28,6 +28,8 @@ export function DataTable({
   columns,
   data = [],
   loading = false,
+  error = null,
+  onRetry,
   pagination,
   onPageChange,
   onSort,
@@ -99,6 +101,21 @@ export function DataTable({
   }
 
   if (!data.length) {
+    if (error) {
+      return (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card px-6 py-12 text-center">
+          <p className="text-sm font-medium text-foreground">Couldn&apos;t load data</p>
+          <p className="max-w-sm text-xs text-muted-foreground">
+            {error?.message || 'Something went wrong while fetching. Please try again.'}
+          </p>
+          {onRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              Retry
+            </Button>
+          )}
+        </div>
+      );
+    }
     return emptyState || <EmptyState title="No data" description="No items match your criteria." />;
   }
 
