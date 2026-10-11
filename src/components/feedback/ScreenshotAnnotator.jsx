@@ -406,6 +406,9 @@ function ScreenshotAnnotator({ url, initialAnnotations = [], onSave, onClose }) 
           <button
             key={color}
             onClick={() => setSelectedColor(color)}
+            title={`Annotation color ${color}`}
+            aria-label={`Annotation color ${color}`}
+            aria-pressed={selectedColor === color}
             className={`h-6 w-6 rounded-full border-2 transition-all ${
               selectedColor === color ? 'scale-110 border-white' : 'border-transparent'
             }`}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
+import { useTheme } from '@/providers/ThemeProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { useWorkspace, useUpdateWorkspace, useWorkspaceStats } from '@/hooks/useWorkspace';
 import { api } from '@/lib/api';
@@ -58,7 +59,9 @@ function UsageBar({ current, limit, label }) {
       {isWarning && (
         <p className="flex items-center gap-1.5 text-xs text-destructive">
           <AlertCircle size={12} />
-          Nearing limit — upgrade to continue uninterrupted
+          {current > limit
+            ? 'Limit reached — upgrade to continue uninterrupted'
+            : 'Nearing limit — upgrade to continue uninterrupted'}
         </p>
       )}
     </div>
@@ -101,7 +104,8 @@ function SectionHeader({ icon: Icon, title, description, action }) {
 }
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, workspaceRole } = useAuth();
+  const { dark, toggleTheme } = useTheme();
   const { data: workspace, isLoading } = useWorkspace(user?.workspaceId);
   const { data: stats, isLoading: statsLoading } = useWorkspaceStats(user?.workspaceId);
   const updateWorkspace = useUpdateWorkspace();
@@ -284,6 +288,9 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={toggleTheme}
+              title={dark ? 'Light mode' : 'Dark mode'}
+              aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <Palette size={18} />
@@ -413,7 +420,11 @@ export default function SettingsPage() {
                     disabled
                     className="saas-input"
                   />
-                  <p className="saas-hint">Contact your admin to change your email.</p>
+                  <p className="saas-hint">
+                    {['owner', 'admin'].includes(workspaceRole)
+                      ? 'Email changes are handled by support — contact us to update it.'
+                      : 'Contact your admin to change your email.'}
+                  </p>
                 </div>
 
                 {/* Actions */}
@@ -593,19 +604,24 @@ export default function SettingsPage() {
                 ) : usage ? (
                   <div className="space-y-4 pt-1">
                     <UsageBar
-                      current={usage.feedback?.current ?? 0}
-                      limit={usage.feedback?.limit ?? 100}
-                      label="Feedback Pins"
+                      current={usage.feedbackMonthly?.current ?? usage.feedback?.current ?? 0}
+                      limit={usage.feedbackMonthly?.limit ?? usage.feedback?.limit ?? 100}
+                      label="Feedback Pins (this month)"
                     />
                     <UsageBar
-                      current={usage.websites?.current ?? 0}
-                      limit={usage.websites?.limit ?? 100}
+                      current={usage.projects?.current ?? 0}
+                      limit={usage.projects?.limit ?? 3}
                       label="Active Projects"
                     />
                     <UsageBar
-                      current={usage.storage?.current ?? 4.2}
-                      limit={usage.storage?.limit ?? 5}
-                      label="Storage (GB)"
+                      current={usage.websites?.current ?? 0}
+                      limit={usage.websites?.limit ?? 3}
+                      label="Websites"
+                    />
+                    <UsageBar
+                      current={usage.members?.current ?? 0}
+                      limit={usage.members?.limit ?? 5}
+                      label="Team Members"
                     />
                   </div>
                 ) : (

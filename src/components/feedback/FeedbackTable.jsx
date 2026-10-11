@@ -87,6 +87,9 @@ export function FeedbackTable({
   onRetry,
   pagination,
   onPageChange,
+  onSort,
+  sortKey,
+  sortDir,
   onRowClick,
   members = [],
   showProject = false,
@@ -125,6 +128,7 @@ export function FeedbackTable({
     cols.push({
       key: 'status',
       header: 'Status',
+      sortable: true,
       measureFn: (item) => STATUS_LABEL[item.status] || item.status || 'In Progress',
       render: (item) => (
         <FeedbackInlineField
@@ -184,6 +188,7 @@ export function FeedbackTable({
     cols.push({
       key: 'createdAt',
       header: 'Created',
+      sortable: true,
       measureFn: (item) => formatRelativeTime(item.createdAt || item.created_at),
       render: (item) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -228,6 +233,9 @@ export function FeedbackTable({
       onRetry={onRetry}
       pagination={pagination}
       onPageChange={onPageChange}
+      onSort={onSort}
+      sortKey={sortKey}
+      sortDir={sortDir}
       onRowClick={onRowClick}
       density={compact ? 'compact' : 'comfortable'}
       responsiveCards={true}

@@ -28,6 +28,7 @@ export default function InboxPage() {
   const [search, setSearch] = useState('');
   const debounceRef = useRef(null);
   const [filters, setFilters] = useState({ status: 'all', priority: 'all', project: 'all', page: 1 });
+  const [sort, setSort] = useState({ key: null, dir: 'asc' });
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -40,6 +41,8 @@ export default function InboxPage() {
     search: search || undefined,
     status: filters.status === 'all' ? '' : filters.status,
     priority: filters.priority === 'all' ? '' : filters.priority,
+    sortBy: sort.key || undefined,
+    sortOrder: sort.key ? sort.dir : undefined,
   };
 
   const { data, isLoading, error, refetch } = useWorkspaceFeedback(user?.workspaceId, apiFilters);
@@ -53,6 +56,7 @@ export default function InboxPage() {
   function clearFilters() {
     setFilters({ status: 'all', priority: 'all', project: 'all', page: 1 });
     setSearchInput('');
+    setSort({ key: null, dir: 'asc' });
   }
 
   const feedback = data?.data || [];
@@ -60,6 +64,11 @@ export default function InboxPage() {
 
   function handleFilterChange(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+  }
+
+  function handleSort(key, dir) {
+    setSort({ key, dir });
+    setFilters((prev) => ({ ...prev, page: 1 }));
   }
 
   function handlePageChange(page) {
@@ -80,7 +89,8 @@ export default function InboxPage() {
       .then((blob) => {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `feedback-export-${Date.now()}.csv`;
+        const stamp = new Date().toISOString().slice(0, 10);
+        a.download = `feedback-export-${stamp}.csv`;
         a.click();
         URL.revokeObjectURL(a.href);
       })
@@ -188,6 +198,9 @@ export default function InboxPage() {
           onRetry={() => refetch()}
           pagination={pagination}
           onPageChange={handlePageChange}
+          onSort={handleSort}
+          sortKey={sort.key}
+          sortDir={sort.dir}
           onRowClick={(item) => {
             const projectId = item.Website?.Project?.id || item.project_id;
             if (projectId) router.push(`/dashboard/projects/${projectId}/feedback/${item.id}`);

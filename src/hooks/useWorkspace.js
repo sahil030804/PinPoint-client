@@ -46,6 +46,8 @@ export function useWorkspaceFeedback(workspaceId, filters = {}) {
   if (filters.page) params.set('page', filters.page);
   if (filters.limit) params.set('limit', filters.limit);
   if (filters.search) params.set('search', filters.search);
+  if (filters.sortBy) params.set('sortBy', filters.sortBy);
+  if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
   const query = params.toString();
 
   return useQuery({

@@ -33,23 +33,33 @@ export function DataTable({
   pagination,
   onPageChange,
   onSort,
+  sortKey: controlledSortKey,
+  sortDir: controlledSortDir,
   onRowClick,
   emptyState,
   density = 'comfortable',
   responsiveCards = false,
 }) {
-  const [sortKey, setSortKey] = useState(null);
-  const [sortDir, setSortDir] = useState('asc');
+  const [internalSortKey, setInternalSortKey] = useState(null);
+  const [internalSortDir, setInternalSortDir] = useState('asc');
+  // When the parent controls sorting (server-side), skip the local sort.
+  const controlled = typeof onSort === 'function';
+  const sortKey = controlled ? controlledSortKey : internalSortKey;
+  const sortDir = controlled ? (controlledSortDir || 'asc') : internalSortDir;
 
   function handleSort(key) {
-    const dir = sortKey === key && sortDir === 'asc' ? 'desc' : 'asc';
-    setSortKey(key);
-    setSortDir(dir);
-    if (onSort) onSort(key, dir);
+    if (controlled) {
+      const dir = sortKey === key && sortDir === 'asc' ? 'desc' : 'asc';
+      onSort(key, dir);
+      return;
+    }
+    const dir = internalSortKey === key && internalSortDir === 'asc' ? 'desc' : 'asc';
+    setInternalSortKey(key);
+    setInternalSortDir(dir);
   }
 
   const sortedData = useMemo(() => {
-    if (!sortKey || !data.length) return data;
+    if (controlled || !sortKey || !data.length) return data;
     return [...data].sort((a, b) => {
       const aVal = getNestedValue(a, sortKey);
       const bVal = getNestedValue(b, sortKey);
@@ -58,7 +68,7 @@ export function DataTable({
       const cmp = typeof aVal === 'string' ? aVal.localeCompare(bVal) : aVal - bVal;
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [data, sortKey, sortDir]);
+  }, [data, sortKey, sortDir, controlled]);
 
   if (loading) {
     return (

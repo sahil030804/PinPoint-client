@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import dynamic from 'next/dynamic';
-import { useFeedback, useComments, useAddComment, useFeedbackTimeline } from '@/hooks/useFeedback';
+import { useFeedback, useComments, useAddComment, useUpdateComment, useDeleteComment, useFeedbackTimeline } from '@/hooks/useFeedback';
 import { useUpdateFeedback } from '@/hooks/useFeedback';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { FeedbackTimeline } from '@/components/feedback/FeedbackTimeline';
@@ -130,13 +130,19 @@ export default function FeedbackDetailPage() {
   const { data: comments = [], isLoading: commentsLoading } = useComments(params.feedbackId);
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
   const addComment = useAddComment();
+  const updateComment = useUpdateComment();
+  const deleteComment = useDeleteComment();
   const updateFeedback = useUpdateFeedback();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentBody, setEditCommentBody] = useState('');
+  const [confirmDeleteCommentId, setConfirmDeleteCommentId] = useState(null);
   const [editing, setEditing] = useState(false);
   const [editStatus, setEditStatus] = useState('');
   const [editPriority, setEditPriority] = useState('');
   const [editAssignee, setEditAssignee] = useState('');
+  const [editTags, setEditTags] = useState('');
   const [annotatorOpen, setAnnotatorOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -176,6 +182,7 @@ export default function FeedbackDetailPage() {
     setEditStatus(feedback.status);
     setEditPriority(feedback.priority);
     setEditAssignee(feedback.assignee?.id || '');
+    setEditTags((feedback.tags || []).join(', '));
     setEditing(true);
   }
 
@@ -185,6 +192,11 @@ export default function FeedbackDetailPage() {
     if (editPriority !== feedback.priority) updates.priority = editPriority;
     if (canAssign && editAssignee !== (feedback.assignee?.id || '')) {
       updates.assigneeId = editAssignee || null;
+    }
+    const nextTags = editTags.split(',').map((t) => t.trim()).filter(Boolean);
+    const prevTags = feedback.tags || [];
+    if (JSON.stringify(nextTags) !== JSON.stringify(prevTags)) {
+      updates.tags = nextTags;
     }
     if (Object.keys(updates).length > 0) {
       try {
@@ -206,6 +218,34 @@ export default function FeedbackDetailPage() {
       setNewComment('');
     } catch (err) {
       toastError(err.message || 'Failed to post comment');
+    }
+  }
+
+  function startEditingComment(comment) {
+    setEditingCommentId(comment.id);
+    setEditCommentBody(comment.body);
+    setConfirmDeleteCommentId(null);
+  }
+
+  async function saveEditedComment() {
+    if (!editCommentBody.trim()) return;
+    try {
+      await updateComment.mutateAsync({ id: editingCommentId, body: editCommentBody.trim() });
+      setEditingCommentId(null);
+      setEditCommentBody('');
+      toastSuccess('Comment updated');
+    } catch (err) {
+      toastError(err.message || 'Failed to update comment');
+    }
+  }
+
+  async function handleDeleteComment(id) {
+    try {
+      await deleteComment.mutateAsync(id);
+      setConfirmDeleteCommentId(null);
+      toastSuccess('Comment deleted');
+    } catch (err) {
+      toastError(err.message || 'Failed to delete comment');
     }
   }
 
@@ -280,6 +320,7 @@ export default function FeedbackDetailPage() {
             <Share2 size={15} />
             Share
           </button>
+          {canAssign && (
           <DropdownMenu
             onOpenChange={(open) => { if (!open) setShowDeleteConfirm(false); }}
           >
@@ -291,20 +332,13 @@ export default function FeedbackDetailPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {!showDeleteConfirm ? (
-                <>
-                  <DropdownMenuItem onClick={handleShare}>
-                    Copy link
-                  </DropdownMenuItem>
-                  {canAssign && (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      closeOnClick={false}
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
-                      Delete feedback
-                    </DropdownMenuItem>
-                  )}
-                </>
+                <DropdownMenuItem
+                  variant="destructive"
+                  closeOnClick={false}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Delete feedback
+                </DropdownMenuItem>
               ) : (
                 <>
                   <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
@@ -323,6 +357,7 @@ export default function FeedbackDetailPage() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
       </div>
 
@@ -369,7 +404,12 @@ export default function FeedbackDetailPage() {
                   ))}
                 </div>
               ) : comments.length > 0 ? (
-                comments.map((comment) => (
+                comments.map((comment) => {
+                  const isAuthor = (comment.author?.id || comment.userId) === user?.id;
+                  const canDeleteComment = isAuthor || ['owner', 'admin'].includes(workspaceRole);
+                  const isEditingThis = editingCommentId === comment.id;
+                  const isConfirmingDelete = confirmDeleteCommentId === comment.id;
+                  return (
                   <div key={comment.id} className="flex items-start gap-3">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
                       {comment.author?.name?.[0] || '?'}
@@ -396,13 +436,84 @@ export default function FeedbackDetailPage() {
                             Maintainer
                           </span>
                         )}
+                        {(isAuthor || canDeleteComment) && !isEditingThis && !isConfirmingDelete && (
+                          <span className="ml-auto flex items-center gap-2">
+                            {isAuthor && (
+                              <button
+                                type="button"
+                                onClick={() => startEditingComment(comment)}
+                                className="text-xs text-gray-400 hover:text-primary transition-colors"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {canDeleteComment && (
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteCommentId(comment.id)}
+                                className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </span>
+                        )}
                       </div>
-                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                        {comment.body}
-                      </p>
+                      {isEditingThis ? (
+                        <div className="mt-2">
+                          <textarea
+                            value={editCommentBody}
+                            onChange={(e) => setEditCommentBody(e.target.value)}
+                            rows={2}
+                            autoFocus
+                            className="block w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                          />
+                          <div className="mt-2 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={saveEditedComment}
+                              disabled={!editCommentBody.trim() || updateComment.isPending}
+                              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                            >
+                              {updateComment.isPending ? 'Saving…' : 'Save'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setEditingCommentId(null); setEditCommentBody(''); }}
+                              className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : isConfirmingDelete ? (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Delete this comment?</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteComment(comment.id)}
+                            disabled={deleteComment.isPending}
+                            className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                          >
+                            {deleteComment.isPending ? 'Deleting…' : 'Yes, delete'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteCommentId(null)}
+                            className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+                          {comment.body}
+                        </p>
+                      )}
                     </div>
                   </div>
-                ))
+                  );
+                })
               ) : (
                 <EmptyState icon={<MessageSquare className="h-8 w-8" />} title="No comments yet" />
               )}
@@ -503,6 +614,16 @@ export default function FeedbackDetailPage() {
                       />
                     </div>
                   )}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      value={editTags}
+                      onChange={(e) => setEditTags(e.target.value)}
+                      placeholder="bug, billing"
+                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                    />
+                  </div>
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={saveChanges}

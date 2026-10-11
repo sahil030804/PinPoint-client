@@ -151,6 +151,30 @@ export function useAddComment() {
   });
 }
 
+export function useUpdateComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, body }) => api.put(`/comments/${id}`, { body }),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline'] });
+    },
+  });
+}
+
+export function useDeleteComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.del(`/comments/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline'] });
+    },
+  });
+}
+
 export function useWorkspaceAnalytics(workspaceId) {
   return useQuery({
     queryKey: ['analytics', 'overview', workspaceId],

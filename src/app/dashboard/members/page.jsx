@@ -49,7 +49,7 @@ function RoleBadge({ role }) {
   const config = ROLE_COLORS[role] || ROLE_COLORS.viewer;
   const Icon = ROLE_ICONS[role] || User;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${config}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${config}`}>
       <Icon size={12} />
       {role}
     </span>
@@ -202,6 +202,7 @@ export default function MembersPage() {
               </div>
               <button
                 onClick={() => { setShowInvite(false); setEmail(''); }}
+                aria-label="Close invite form"
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted transition-colors"
               >
                 <X size={16} />

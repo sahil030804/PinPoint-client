@@ -67,7 +67,7 @@ function HeroSection() {
               className="inline-flex items-center gap-2 rounded-xl border-2 border-gray-300 dark:border-gray-700 px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all active:scale-[0.97]"
             >
               <Play size={18} />
-              Watch Demo
+              Explore Features
             </Link>
           </div>
         </FadeIn>

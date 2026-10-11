@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Settings, Users, Bell, X, ChevronDown, LogOut, Moon, Sun, Menu } from 'lucide-react';
+import { LayoutDashboard, Inbox, FolderKanban, UserCheck, CheckCircle, Activity, Settings, Users, Bell, X, ChevronDown, LogOut, Moon, Sun, Menu } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { label: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
   { label: 'Assigned to me', href: '/dashboard/assigned', icon: UserCheck },
   { label: 'Resolved', href: '/dashboard/resolved', icon: CheckCircle },
+  { label: 'Activity', href: '/dashboard/activity', icon: Activity },
 ];
 
 const NAV_ITEMS_BOTTOM = [
@@ -185,6 +186,8 @@ export default function DashboardLayout({ children }) {
         <div className="relative border-b border-border px-3 py-2">
           <button
             onClick={() => setSwitcherOpen(!switcherOpen)}
+            aria-expanded={switcherOpen}
+            aria-label="Switch workspace"
             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:bg-muted transition-colors"
           >
             <span className="truncate">{activeWorkspace?.name || 'SELECT WORKSPACE'}</span>
@@ -289,7 +292,7 @@ export default function DashboardLayout({ children }) {
           <Link href="/dashboard" onClick={() => setSidebarOpen(false)} className="text-lg font-bold text-foreground tracking-tight">
             PinPoint
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-muted">
+          <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="rounded-lg p-2 text-muted-foreground hover:bg-muted">
             <X size={18} />
           </button>
         </div>
@@ -298,6 +301,8 @@ export default function DashboardLayout({ children }) {
         <div className="relative border-b border-border px-3 py-2">
           <button
             onClick={() => setSwitcherOpen(!switcherOpen)}
+            aria-expanded={switcherOpen}
+            aria-label="Switch workspace"
             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:bg-muted"
           >
             <span className="truncate">{activeWorkspace?.name || 'SELECT WORKSPACE'}</span>
@@ -385,6 +390,7 @@ export default function DashboardLayout({ children }) {
             <button
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted lg:hidden"
               onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
             >
               <Menu size={20} />
             </button>

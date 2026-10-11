@@ -158,6 +158,7 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
       '.pp-widget-btn { position: fixed; z-index: 2147483645; display: flex; align-items: center; gap: 8px; padding: 12px 20px; border: none; border-radius: 9999px; cursor: pointer; font-size: 14px; font-weight: 600; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.18); transition: transform 0.2s cubic-bezier(.4,0,.2,1), box-shadow 0.2s; letter-spacing: 0.01em; }',
       '.pp-widget-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.24); }',
       '.pp-widget-btn:active { transform: scale(0.97); }',
+      '.pp-widget-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }',
       '@media (max-width: 640px) { .pp-widget-btn { padding: 12px; } .pp-widget-btn span { display: none; } }',
 
       '/* Region Selector */',
@@ -301,9 +302,18 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     buttonEl = document.createElement('div');
     buttonEl.className = 'pp-widget pp-widget-btn';
     buttonEl.style.backgroundColor = CONFIG.color;
+    buttonEl.setAttribute('role', 'button');
+    buttonEl.setAttribute('tabindex', '0');
+    buttonEl.setAttribute('aria-label', CONFIG.buttonText || 'Send feedback');
     applyPosition(buttonEl, CONFIG.position);
     buttonEl.innerHTML = getIcon(CONFIG.icon) + '<span>' + CONFIG.buttonText + '</span>';
     buttonEl.addEventListener('click', startCapture);
+    buttonEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        startCapture();
+      }
+    });
     document.body.appendChild(buttonEl);
   }
 
@@ -1209,5 +1219,5 @@ var annotatingColors = ['#FF4444', '#FF8800', '#FFCC00', '#44BB44', '#4488FF', '
     return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  window.Feedback = { init: init, version: '6' };
+  window.Feedback = { init: init, version: '7' };
 })();

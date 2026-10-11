@@ -39,7 +39,7 @@ function RoleBadge({ role }) {
   const config = ROLE_COLORS[role] || ROLE_COLORS.viewer;
   const Icon = ROLE_ICONS[role] || User;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${config}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${config}`}>
       <Icon size={12} />
       {role}
     </span>
@@ -63,7 +63,7 @@ function StatusPill({ status }) {
 }
 
 export default function MembersPage() {
-  const { user } = useAuth();
+  const { user, workspaceRole } = useAuth();
   const { success: toastSuccess, error: toastError } = useToast();
   const { data: members = [], isLoading } = useWorkspaceMembers(user?.workspaceId);
   const inviteMember = useInviteMember();
@@ -73,7 +73,8 @@ export default function MembersPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('developer');
-  const canManageMembers = ['owner', 'admin'].includes(user?.workspaceRole || '');
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
+  const canManageMembers = ['owner', 'admin'].includes(workspaceRole);
 
   const filteredMembers = useMemo(() => {
     let result = members;
@@ -104,11 +105,21 @@ export default function MembersPage() {
 
   async function handleRemove(member) {
     try {
-      await removeMember.mutateAsync({ workspaceId: user?.workspaceId, userId: member.userId });
+      await removeMember.mutateAsync({ workspaceId: user?.workspaceId, userId: member.User?.id || member.userId });
       toastSuccess('Member removed');
+      setConfirmRemoveId(null);
     } catch {
       toastError('Failed to remove member');
     }
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
   }
 
   return (
@@ -153,6 +164,8 @@ export default function MembersPage() {
                   <tr className="border-b border-border">
                     <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Member</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Joined</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
@@ -179,6 +192,12 @@ export default function MembersPage() {
                         <td className="px-4 py-3.5">
                           <RoleBadge role={role} />
                         </td>
+                        <td className="px-4 py-3.5">
+                          <StatusPill status={member.status} />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDate(member.joinedAt)}</span>
+                        </td>
                         <td className="px-4 py-3.5 text-right">
                           {canManageMembers && member.role !== 'owner' && (
                             <DropdownMenu>
@@ -190,17 +209,33 @@ export default function MembersPage() {
                                 <MoreVertical size={16} />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="min-w-[200px] p-2">
-                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>
-                                {['admin', 'developer', 'viewer', 'client'].map((r) => (
-                                  <DropdownMenuItem key={r} onClick={() => handleRoleChange(member.User?.id, r)} className={member.role === r ? 'bg-primary/10' : ''}>
-                                    <span className={`h-2 w-2 rounded-full shrink-0 ${member.role === r ? 'bg-primary' : 'bg-transparent'}`} />
-                                    <span className={member.role === r ? '' : 'ml-[10px]'}>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
-                                  </DropdownMenuItem>
-                                ))}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem variant="destructive" onClick={() => handleRemove(member)}>
-                                  Remove member
-                                </DropdownMenuItem>
+                                {(confirmRemoveId === (member.User?.id || member.userId)) ? (
+                                  <>
+                                    <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                                      Remove {member.User?.name || 'this member'}?
+                                    </div>
+                                    <DropdownMenuItem variant="destructive" onClick={() => handleRemove(member)}>
+                                      Yes, remove
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setConfirmRemoveId(null)}>
+                                      Cancel
+                                    </DropdownMenuItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Role</div>
+                                    {['admin', 'developer', 'viewer', 'client'].map((r) => (
+                                      <DropdownMenuItem key={r} onClick={() => handleRoleChange(member.User?.id, r)} className={member.role === r ? 'bg-primary/10' : ''}>
+                                        <span className={`h-2 w-2 rounded-full shrink-0 ${member.role === r ? 'bg-primary' : 'bg-transparent'}`} />
+                                        <span className={member.role === r ? '' : 'ml-[10px]'}>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
+                                      </DropdownMenuItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem variant="destructive" closeOnClick={false} onClick={() => setConfirmRemoveId(member.User?.id || member.userId)}>
+                                      Remove member
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           )}
@@ -224,7 +259,7 @@ export default function MembersPage() {
                 <h3 className="text-lg font-semibold text-foreground">Invite Member</h3>
                 <p className="mt-1 text-sm text-muted-foreground">Send an invitation to join this workspace.</p>
               </div>
-              <button onClick={() => setShowInvite(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-muted">
+              <button onClick={() => setShowInvite(false)} aria-label="Close invite dialog" className="rounded-lg p-2 text-muted-foreground hover:bg-muted">
                 <X size={18} />
               </button>
             </div>

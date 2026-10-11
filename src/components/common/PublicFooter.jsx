@@ -32,12 +32,8 @@ export function PublicFooter() {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Connect</h4>
             <div className="space-y-3">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                Twitter
-                <ExternalLink size={12} />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                LinkedIn
+              <a href="mailto:sahil030804@gmail.com?subject=PinPoint%20Inquiry" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                Contact Us
                 <ExternalLink size={12} />
               </a>
             </div>
@@ -46,8 +42,8 @@ export function PublicFooter() {
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
           <p>&copy; {new Date().getFullYear()} PinPoint Inc. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <span className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer">Terms of Service</span>
+            <Link href="/privacy" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

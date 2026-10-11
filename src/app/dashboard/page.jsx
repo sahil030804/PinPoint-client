@@ -5,11 +5,13 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
 import { useAnalyticsOverview, useFeedbackTrends, useActivityFeed } from "@/hooks/useWorkspace";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { RadixSelect } from "@/components/common/RadixSelect";
 import {
   MessageSquare,
   AlertCircle,
   Clock,
+  FlaskConical,
   CheckCircle2,
   TrendingUp,
   Calendar,
@@ -36,40 +38,6 @@ const TrendChart = dynamic(
     ),
   }
 );
-
-const ACTION_ICONS = {
-  created: { icon: Bug, color: "text-primary bg-primary/10" },
-  assigned: { icon: UserPlus, color: "text-purple-600 bg-purple-100" },
-  unassigned: { icon: UserX, color: "text-muted-foreground bg-muted" },
-  status_changed: { icon: ArrowRightLeft, color: "text-orange-600 bg-orange-100" },
-  priority_changed: { icon: Zap, color: "text-yellow-600 bg-yellow-100" },
-  comment_added: { icon: Mail, color: "text-primary bg-primary/10" },
-  resolved: { icon: CheckCircle2, color: "text-emerald-600 bg-emerald-100" },
-  reopened: { icon: RotateCcw, color: "text-orange-600 bg-orange-100" },
-};
-
-const ACTIVITY_LABELS = {
-  created: "reported feedback",
-  comment_added: "commented on",
-  resolved: "resolved",
-  status_changed: "changed status of",
-  priority_changed: "changed priority of",
-  assigned: "assigned",
-  unassigned: "removed assignee from",
-  reopened: "reopened",
-};
-
-function formatRelativeTime(dateString) {
-  const diff = Date.now() - new Date(dateString).getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateString).toLocaleDateString();
-}
 
 function getInitials(name) {
   if (!name) return "?";
@@ -170,7 +138,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label="Total Feedback"
           value={stats?.totalFeedback}
@@ -190,8 +158,14 @@ export default function DashboardPage() {
           iconColor="text-primary bg-primary/10 dark:bg-primary/10"
         />
         <StatCard
+          label="In Testing"
+          value={stats?.testing}
+          icon={FlaskConical}
+          iconColor="text-[#7C86A8] dark:text-[#9AA3C7] bg-[#E8EAF3] dark:bg-[#1E2233]"
+        />
+        <StatCard
           label="Resolved This Month"
-          value={stats?.resolved}
+          value={stats?.resolvedThisMonth ?? stats?.resolved}
           icon={CheckCircle2}
           iconColor="text-[#6E8F7E] dark:text-[#8DB8A1] bg-[#E2ECE6] dark:bg-[#16271F]"
         />
@@ -228,100 +202,7 @@ export default function DashboardPage() {
               Recent Activity
             </h3>
           </div>
-          <div className="flex-1 overflow-y-auto max-h-[400px]">
-            {activityLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              </div>
-            ) : activities.length > 0 ? (
-              activities.slice(0, 8).map((activity, index) => {
-                const action = ACTION_ICONS[activity.action];
-                const label = ACTIVITY_LABELS[activity.action] || activity.action.replace(/_/g, " ");
-                const isLast = index === Math.min(activities.length, 8) - 1;
-
-                return (
-                  <div
-                    key={activity.id}
-                    className={cn(
-                      "flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-muted/50",
-                      !isLast && "border-b border-border/50"
-                    )}
-                  >
-                    {/* Avatar or action icon */}
-                    {activity.actor_avatar ? (
-                      <div className="mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full border border-border">
-                        <img
-                          src={activity.actor_avatar}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : action ? (
-                      <div className={cn(
-                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                        action.color
-                      )}>
-                        <action.icon size={14} />
-                      </div>
-                    ) : (
-                      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                        <Bell size={14} />
-                      </div>
-                    )}
-
-                    {/* Content */}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm leading-snug text-foreground">
-                        <span className="font-semibold">
-                          {activity.actor_name || "A visitor"}
-                        </span>{" "}
-                        {label}
-                        {(activity.action === "assigned" || activity.action === "unassigned") && " "}
-                        {activity.action === "assigned" && (
-                          <span className="font-medium">
-                            {activity.metadata?.assigneeName || activity.assignee_name || "a team member"}
-                          </span>
-                        )}
-                        {activity.feedback_id && (
-                          <>
-                            {" "}
-                            <Link
-                              href={`/dashboard/projects/${activity.project_id || "unknown"}/feedback/${activity.feedback_id}`}
-                              className="font-mono text-primary hover:underline"
-                            >
-                              #{typeof activity.feedback_id === "string"
-                                ? activity.feedback_id.slice(0, 7)
-                                : activity.feedback_id}
-                            </Link>
-                          </>
-                        )}
-                      </p>
-                      {activity.feedback_title && (
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {activity.feedback_title}
-                        </p>
-                      )}
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatRelativeTime(activity.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                No activity yet
-              </div>
-            )}
-          </div>
-          <div className="border-t border-border px-5 py-3 text-center">
-            <Link
-              href="/dashboard/inbox"
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              View All Activity
-            </Link>
-          </div>
+          <ActivityFeed activities={activities} loading={activityLoading} limit={8} showViewAll />
         </div>
       </div>
     </div>

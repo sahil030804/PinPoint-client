@@ -206,6 +206,9 @@ export default function PricingPage() {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
+            role="switch"
+            aria-checked={isAnnual}
+            aria-label="Toggle annual billing"
             className={`relative h-7 w-12 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-700'}`}
           >
             <span

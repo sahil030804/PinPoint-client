@@ -11,7 +11,8 @@ function RegisterForm() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [invitationId, setInvitationId] = useState(null);
-  const { register } = useAuth();
+  const [planIntent, setPlanIntent] = useState(null);
+  const { user, loading: authLoading, register } = useAuth();
   const { error: toastError } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -19,7 +20,16 @@ function RegisterForm() {
   useEffect(() => {
     const inv = searchParams.get('invitation');
     if (inv) setInvitationId(inv);
+    const plan = searchParams.get('plan');
+    if (plan && plan !== 'free') setPlanIntent(plan);
   }, [searchParams]);
+
+  // Already signed in? Head straight to the dashboard.
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -37,6 +47,14 @@ function RegisterForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (authLoading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
   }
 
   return (
@@ -83,6 +101,12 @@ function RegisterForm() {
           <div className="auth-slide-up">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Create your account</h1>
             <p className="mt-2 text-sm text-muted-foreground">Get started with PinPoint for free</p>
+            {planIntent && (
+              <p className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                You picked the <span className="font-semibold capitalize">{planIntent}</span> plan — checkout isn&apos;t live yet,
+                so you&apos;ll start on Free and can upgrade anytime.
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -155,7 +179,10 @@ function RegisterForm() {
               </button>
 
               <p className="mt-4 text-xs text-center text-muted-foreground leading-relaxed">
-                By creating an account, you agree to our Terms of Service and Privacy Policy.
+                By creating an account, you agree to our{' '}
+                <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
               </p>
             </div>
           </form>

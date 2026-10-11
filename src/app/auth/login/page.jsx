@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/providers/AuthProvider';
@@ -11,9 +11,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
   const { error: toastError } = useToast();
   const router = useRouter();
+
+  // Already signed in? Honor a saved return path, else go to the dashboard.
+  useEffect(() => {
+    if (!authLoading && user) {
+      const ret = sessionStorage.getItem('pp_return_to');
+      sessionStorage.removeItem('pp_return_to');
+      router.replace(ret && ret.startsWith('/') ? ret : '/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -22,7 +31,9 @@ export default function LoginPage() {
     try {
       const res = await login(email, password);
       if (res.success) {
-        router.push('/dashboard');
+        const ret = sessionStorage.getItem('pp_return_to');
+        sessionStorage.removeItem('pp_return_to');
+        router.push(ret && ret.startsWith('/') ? ret : '/dashboard');
       } else {
         toastError(res.error?.message || 'Login failed');
       }
@@ -31,6 +42,14 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (authLoading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
   }
 
   return (

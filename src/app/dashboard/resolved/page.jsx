@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useWorkspaceFeedback, useWorkspaceMembers } from '@/hooks/useWorkspace';
@@ -11,10 +12,22 @@ export default function ResolvedPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { data: members = [] } = useWorkspaceMembers(user?.workspaceId);
-  const { data, isLoading, error, refetch } = useWorkspaceFeedback(user?.workspaceId, { status: 'done,closed' });
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState({ key: null, dir: 'asc' });
+  const { data, isLoading, error, refetch } = useWorkspaceFeedback(user?.workspaceId, {
+    status: 'done,closed',
+    page,
+    sortBy: sort.key || undefined,
+    sortOrder: sort.key ? sort.dir : undefined,
+  });
 
   const feedback = data?.data || [];
   const pagination = data?.pagination;
+
+  function handleSort(key, dir) {
+    setSort({ key, dir });
+    setPage(1);
+  }
 
   return (
     <div>
@@ -26,6 +39,10 @@ export default function ResolvedPage() {
           error={error}
           onRetry={() => refetch()}
           pagination={pagination}
+          onPageChange={setPage}
+          onSort={handleSort}
+          sortKey={sort.key}
+          sortDir={sort.dir}
           onRowClick={(item) => {
             const projectId = item.Website?.Project?.id;
             if (projectId) router.push(`/dashboard/projects/${projectId}/feedback/${item.id}`);

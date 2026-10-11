@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
@@ -19,8 +19,8 @@ const WidgetConfigForm = dynamic(() => import('@/components/project/WidgetConfig
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
-  const { error: toastError } = useToast();
+  const { user, workspaceRole } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const queryClient = useQueryClient();
   const { data: projects = [], isLoading: projectsLoading } = useProjects(user?.workspaceId);
   const project = projects.find((p) => p.id === params.id);
@@ -32,16 +32,49 @@ export default function ProjectDetailPage() {
   const [showWidgetModal, setShowWidgetModal] = useState(false);
   const [widgetTab, setWidgetTab] = useState('configure');
   const [feedbackPage, setFeedbackPage] = useState(1);
+  const [feedbackSort, setFeedbackSort] = useState({ key: null, dir: 'asc' });
+  const [confirmDeleteProject, setConfirmDeleteProject] = useState(false);
   const addWebsite = useCreateWebsite();
+  const canManageProject = ['owner', 'admin', 'developer'].includes(workspaceRole);
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: () => api.del(`/projects/${params.id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toastSuccess('Project deleted.');
+      router.push('/dashboard/projects');
+    },
+    onError: (err) => {
+      toastError(err.message || 'Failed to delete project');
+      setConfirmDeleteProject(false);
+    },
+  });
 
   const { data: feedbackData, isLoading: feedbackLoading } = useWorkspaceFeedback(user?.workspaceId, {
     projectId: params.id,
     page: feedbackPage,
+    sortBy: feedbackSort.key || undefined,
+    sortOrder: feedbackSort.key ? feedbackSort.dir : undefined,
   });
+
+  function handleFeedbackSort(key, dir) {
+    setFeedbackSort({ key, dir });
+    setFeedbackPage(1);
+  }
 
   const feedback = feedbackData?.data || [];
   const pagination = feedbackData?.pagination;
   const firstWebsite = websites[0];
+
+  // Close the install modal on Escape
+  useEffect(() => {
+    if (!showWidgetModal) return;
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') setShowWidgetModal(false);
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showWidgetModal]);
 
   async function handleAddWebsite(e) {
     e.preventDefault();
@@ -178,6 +211,9 @@ export default function ProjectDetailPage() {
             loading={feedbackLoading}
             pagination={pagination}
             onPageChange={setFeedbackPage}
+            onSort={handleFeedbackSort}
+            sortKey={feedbackSort.key}
+            sortDir={feedbackSort.dir}
             onRowClick={(item) => router.push(`/dashboard/projects/${params.id}/feedback/${item.id}`)}
             members={members}
             showProject={false}
@@ -190,6 +226,46 @@ export default function ProjectDetailPage() {
             }
           />
         </div>
+
+        {/* Danger Zone */}
+        {canManageProject && (
+          <div className="rounded-xl border border-destructive/30 bg-card p-6">
+            <h3 className="text-sm font-semibold text-destructive">Danger Zone</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Deleting this project permanently removes its websites and all feedback. This cannot be undone.
+            </p>
+            {!confirmDeleteProject ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteProject(true)}
+                className="mt-3 rounded-lg border border-destructive/40 px-4 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+              >
+                Delete project
+              </button>
+            ) : (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-foreground">
+                  Delete “{project.name}” permanently?
+                </span>
+                <button
+                  type="button"
+                  disabled={deleteProjectMutation.isPending}
+                  onClick={() => deleteProjectMutation.mutate()}
+                  className="rounded-lg bg-destructive px-4 py-2 text-xs font-medium text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {deleteProjectMutation.isPending ? 'Deleting…' : 'Yes, delete'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteProject(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Install Widget Modal */}
@@ -214,6 +290,7 @@ export default function ProjectDetailPage() {
                 <h2 className="text-lg font-semibold text-foreground">Widget Installation</h2>
                 <button
                   onClick={() => setShowWidgetModal(false)}
+                  aria-label="Close widget installation"
                   className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   ✕
